@@ -1,4 +1,3 @@
-
 import os
 import openai
 
@@ -49,6 +48,8 @@ def patient_answered_question(text):
         return True
     elif 'No' in answer_text:
         return False
+    else:
+        return "Repeat"
 
 #What symptoms do we need to ask more specifically about? [Next Question for Patient]
 def what_to_ask_next(text):
@@ -65,7 +66,7 @@ def what_to_ask_next(text):
     next_question = response['choices'][0]['text']
     return next_question
 
-#What are his symptoms and when did they occur? [List of Symptoms]
+#What are his symptoms and when did they occur? [List of Symptoms] [List of Symptom Dates]
 def extract_symptoms_from_patient_answer(text):
     response = openai.Completion.create(
       engine="davinci",
@@ -79,9 +80,11 @@ def extract_symptoms_from_patient_answer(text):
     )
     answer = response['choices'][0]['text']
     answer = answer.split('|')
+    answer.remove('\n')
+    answer.remove('')
 
     symptoms = answer[0::3]
-    date = answer[1::3]
+    dates = answer[1::3]
 
     return symptoms, dates
 
@@ -90,7 +93,7 @@ def save_to_database(item):
     pass
     #Databse Magic
 
-
+print(extract_symptoms_from_patient_answer('I had a cut on my thumb on Tuesday.'))
 ##########################################
 # FLASK
 from flask import Flask, request
