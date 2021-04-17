@@ -18,6 +18,6 @@ Open Issues:
 Legal aspect?
 
 # To run Flask
-export FLASK_APP=backend_functions.py 
+$ export FLASK_APP=backend_functions.py 
 
-flask run
+$ flask run
