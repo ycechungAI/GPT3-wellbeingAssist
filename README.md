@@ -19,4 +19,5 @@ Legal aspect?
 
 # To run Flask
 export FLASK_APP=backend_functions.py 
+
 flask run
