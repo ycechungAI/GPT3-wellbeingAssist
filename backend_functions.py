@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 
 import os
 import openai
@@ -14,17 +13,16 @@ def patient_feeling_unwell(text):
 
     response = openai.Completion.create(
       engine="davinci",
-      prompt="I am an accurate answering bot. If you ask me a question whether the patient is sick. \"I will respond \"Yes\". If you ask me a question that is nonsense, trickery answer or ambiguous  I will respond with \"No\".\n\nQ:I am feeling well today.\nA: No\n\nQ: I am feeling so so today.\nA: Yes\n\nQ: I have a flu like symptom and feeling under the weather.\nA: Yes\n\nQ: I have no pain and no symptoms.\nA: No\n\nQ: I am feeling well.  Thanks for asking. \nA: No\n\nQ: I have a headache\nA: Yes\n\nQ: {}".format(text),
+      prompt="I am an accurate answering bot. If you ask me a question whether the patient is sick. \"I will respond \"Yes\". If you ask me a question that is nonsense, trickery answer or ambiguous  I will respond with \"No\".\n\nQ:I am feeling well today.\nA: No\n\nQ: I am feeling so so today.\nA: Yes\n\nQ: I have a flu like symptom and feeling under the weather.\nA: Yes\n\nQ: I have no pain and no symptoms.\nA: No\n\nQ: I am feeling well.  Thanks for asking. \nA: No\n\nQ: I have a headache\nA: Yes\n\nQ: " + text,
       temperature=0,
       max_tokens=10,
       top_p=1,
       frequency_penalty=0,
       presence_penalty=0,
-      stop=["\n"]
+      stop=["Q:"]
     )
 
     answer_text = response['choices'][0]['text']
-    print("HERE:", answer_text)
     if "Yes" in answer_text:
         return [True,answer_text]
     elif "No" in answer_text:
@@ -32,16 +30,6 @@ def patient_feeling_unwell(text):
     else:
         return "Repeat"
 
-=======
-import os
-import openai
-openai.api_key = os.getenv("OPENAI_API_KEY")
-
-start_sequence = "\nA:"
-restart_sequence = "\n\nQ: "
-
-
->>>>>>> ee478cb0d95688e51b9cb95cc7fe4761d7549995
 #Did it fulfill our question? [True, False]
 def patient_answered_question(text):
     #GPT-3 magic
@@ -52,12 +40,13 @@ def patient_answered_question(text):
         max_tokens=5,
         top_p=1,
         frequency_penalty=0,
-        presence_penalty=0,
-        stop=["\n"]
+        presence_penalty=0#,
+        #stop=["\n"]
     )
-    if response=='Yes':
+    answer_text = response['choices'][0]['text']
+    if 'Yes' in answer_text:
         return True
-    elif response=='No':
+    elif 'No' in answer_text:
         return False
 
 #What do we need to ask more specifically about? [Next Question For Patient]
@@ -78,4 +67,4 @@ def save_to_database(item):
     pass
     #Databse Magic
 
-patient_feeling_unwell('I have a headache')
+print(patient_feeling_unwell('I am feeling very sick today.'))
