@@ -6,14 +6,6 @@ def patient_answered_question(text)
     elif False:
         return False
 
-#Do we need to ask a follow-up question? [True, False]
-def need_to_ask_followup(text):
-    #GPT-3 magic
-    if True:
-        return True
-    elif False:
-        return False
-
 #What do we need to ask more specifically about? [Next Question For Patient]
 def what_to_ask_next(text):
     #GPT-3 magic
