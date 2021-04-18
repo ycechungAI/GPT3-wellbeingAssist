@@ -20,7 +20,6 @@ st.markdown(
 # interact with FastAPI endpoint
 backend = 'http://fastapi:8000/code'
 
-
 def process_prompt(input, server_url: str):
     r = requests.post(server_url,
                       json={"input": input},
@@ -30,35 +29,18 @@ def process_prompt(input, server_url: str):
 
 
 # Setting up the Title
-st.title('AI Stock Researcher')
+st.title('Clinical Trial Assistance with GPT-3 :wave:')
 
-st.header("Stock Research Assistance with GPT-3 :wave:")
+#st.header("Clinical Trial Assistance with GPT-3 :wave:")
 
-st.write('''The **AI Stock Researcher** leverages the worlds most advanced language model GPT-3 to generate stock fundamental analysis. It uses a FastAPI service as the backend.
-         Visit this URL at `localhost:8000/docs` for FastAPI documentation.''')
+st.write('''Check in with me regularly to improve drug research.''')
 
 st.image('./ai-bot.jpg', use_column_width=True)
 
-input = st.text_input('Compnany Name:')
+input = st.text_input('Send Robo a message:')
 
-if st.button('Generate Report'):
-    st.subheader('Stock Fundamentals')
-    with st.spinner(text='Fundamental Analysis In progress'):
+if st.button('Send'):
+    st.subheader('Send')
+    with st.spinner(text='Sending Message...'):
         report_text = process_prompt(input, backend)
         st.code(report_text)
-
-
-def create_download_link(val, filename):
-    b64 = base64.b64encode(val)  # val looks like b'...'
-    return f'<a href="data:application/octet-stream;base64,{b64.decode()}" download="{filename}.pdf">Download file</a>'
-
-export_as_pdf = st.button("Export as PDF")
-
-if export_as_pdf:
-    report_text = process_prompt(input, backend)
-    pdf = FPDF()
-    pdf.add_page()
-    pdf.set_font('Arial', '', 12)
-    html = create_download_link(pdf.output(dest="S").encode("latin-1"), "test")
-    st.markdown(html, unsafe_allow_html=True)
-
