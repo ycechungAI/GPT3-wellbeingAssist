@@ -3,11 +3,11 @@ import openai
 
 openai.api_key = os.getenv("OPENAI_API_KEY")
 
-defaultCodePrompt = """"I had a headache on sunday and felt a little sick on monday. That went away quickly. Sometimes I have pain in the kidney and today in the morning i felt a bit sleepy.  On wednesday I hurt my leg. I also hurt my ear when I went diving. This morning I hurt my toe. 
+defaultCodePrompt = """"Given the input from the user create a table summarizing the symptoms from the given text and if possible the date when the person experienced the symptom.
+Input: I had a headache on sunday and felt a little sick on monday. That went away quickly. Sometimes I have pain in the kidney and today in the morning i felt a bit sleepy.  On wednesday I hurt my leg. I also hurt my ear when I went diving. This morning I hurt my toe.
 
-{}
-Please make a table summarizing the symptoms and if possible the date when the person experienced the symptom.
-| Symptom | Date | 
+Output:
+| Symptom | Date |
 | Headache | Sunday |
 | Sickness | Monday |
 | Kidney Pain |  Unknown |
@@ -16,12 +16,12 @@ Please make a table summarizing the symptoms and if possible the date when the p
 | Ear Pain |  Unknown |
 | Toe Pain |  Today |
 
-{}
+Input: {}
 Output:"""
 
 def extract_symptoms_from_patient_answer(text):
 
-"""    
+    """
     kwargs = {
         "engine": "davinci",
         "temperature":0,
@@ -31,15 +31,15 @@ def extract_symptoms_from_patient_answer(text):
         "stop": ["Input:", "\n"]
     }
     myKwargs = {}
-"""
+    """
 
     answer = openai.Completion.create(prompt=defaultCodePrompt.format(text)
             ,engine="davinci",max_tokens="85", temperature=0
             ,frequency_penalty=0,
             presence_penalty=0,stop=["Input", "\n"])
-    print(answer["choices"])#[0]["text"]
+    print(answer["choices"])[0]["text"]
 
-    
+
     #answer = answer.split('|')
     #answer.remove('\n')
     #answer.remove('')
