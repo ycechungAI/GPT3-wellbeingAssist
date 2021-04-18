@@ -48,9 +48,10 @@ if st.button('Send'):
         #r = f.readlines()
         r = reversed(list(open("storage.txt", "r").readlines()))
         text = ""
-        for line in r:
-            text += line + '  \n'
-        st.text(text)
+        for idx, line in enumerate(r):
+            if idx <5:
+                text += line + '  \n'
+        st.info(text)
 
 
 
