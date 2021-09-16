@@ -17,6 +17,20 @@ How can we categorize his answer (structure the data)?
 Open Issues: 
 Legal aspect?
 
+
+# Environment - Conda python3
+conda env create --name envname --file=environment_droplet.yml
+conda activate envname
+
+# Install Openai and Flask 
+pip install openai
+pip install python-dotenv
+pip install Flask
+pip install fpdf
+
+# Deactivate Environment
+conda deactivate
+
 # To run Flask
 $ export FLASK_APP=backend_functions.py 
 

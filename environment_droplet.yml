@@ -6,7 +6,7 @@ channels:
 dependencies:
   - flask=1.1.2=pyhd3eb1b0_0
   - flask_cors=3.0.10=pyhd3eb1b0_0
-  - python=3.8.5=h26836e1_1
+  - python=3.8.5
   - pip:
     - openai==0.6.3
 prefix: /Users/j.spranger/miniconda3/envs/sandbox

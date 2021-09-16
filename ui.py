@@ -6,7 +6,8 @@ import base64
 import os
 import numpy as np
 from prompts import patient_feeling_unwell, patient_answered_question, what_to_ask_next, extract_symptoms_from_patient_answer
-
+from dotenv import load_dotenv
+load_dotenv('.env')
 # Formatting the app bg and text color
 st.markdown(
     """

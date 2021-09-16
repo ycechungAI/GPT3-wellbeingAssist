@@ -1,6 +1,7 @@
 import os
 import openai
-
+from dotenv import load_dotenv
+load_dotenv('.env')
 openai.api_key = os.getenv("OPENAI_API_KEY")
 
 defaultCodePrompt1 = """I am an doctor assistant bot. If you ask me a question which indicates that the patient is sick. I will respond Yes. If you ask me a question that is nonsense, trickery the answer will be No.
@@ -106,7 +107,7 @@ Output:"""
 def patient_feeling_unwell(text):
 
     kwargs = {
-        "engine": "davinci",
+        "engine": "davinci-codex",
         "temperature": 0.60,
         "max_tokens": 10,
         "best_of": 1,
@@ -133,7 +134,7 @@ def patient_feeling_unwell(text):
 #Did it fulfill our question? [True, False]
 def patient_answered_question(text):
     kwargs = {
-        "engine": "davinci",
+        "engine": "davinci-codex",
         "temperature": 0.60,
         "max_tokens": 10,
         "best_of": 1,
@@ -158,7 +159,7 @@ def patient_answered_question(text):
 #What symptoms do we need to ask more specifically about? [Next Question for Patient]
 def what_to_ask_next(text):
     kwargs = {
-        "engine": "davinci",
+        "engine": "davinci-codex",
         "temperature":0,
         "top_p":1,
         "max_tokens": 85,
@@ -174,7 +175,7 @@ def what_to_ask_next(text):
 
 def extract_symptoms_from_patient_answer(text):
     kwargs = {
-        "engine": "davinci",
+        "engine": "davinci-codex",
         "temperature": 0.60,
         "max_tokens": 100,
         "best_of": 1,
