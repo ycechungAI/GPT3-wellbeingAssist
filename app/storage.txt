@@ -1,0 +1,11 @@
+hello  
+Bot: Hello! How is your wellbeing today?  
+i am feeling so so  
+Bot:Do you have any other symptoms?  
+I have a slight fever and dry cough  
+
+| Symptom | Date |
+| Fever | Today |
+| Dry Cough | Today |
+
+  

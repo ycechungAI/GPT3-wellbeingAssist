@@ -1,0 +1,14 @@
+pip install pipenv
+
+
+pip install cpython
+
+
+1. create a new Pipenv environment in that folder
+pipenv
+
+pip install streamlit
+
+streamlit run ui.py
+
+

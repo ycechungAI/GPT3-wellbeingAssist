@@ -1,0 +1,15 @@
+name: chinese-transliteration
+language: chinese
+nlp_task: translation, summarization
+input: Chinese Original Text
+output: Engish Summarized
+dataset:
+  One:
+    "Chinese Original Text: 较早进入中国市场的星巴克， 是不少小资钟 情的品牌。相比在美国的平民形象，星巴克在中国就 显得“高端”得多。用料并无差别的一杯中杯美式咖 啡，在美国仅约合人民币12元，国内要卖21元，相当 于贵了75%。第一财经日报\n\n
+     English Summarized: The media stated that Starbucks American coffee is 75% more expensive in China than in the United States."
+  Two:
+    "Chinese Original Text: 加拿大私隐专员指，联邦政府必须对人工智能信息立法以保护国民私隐及人权。据加通社报道，联邦私隐专员塞里恩（Daniel Therrien）周四发布有关监管人工智能的新建议时说，他正在呼吁立法以规范人工智能系统的使用和开发。他在一份声明中说，立法将有助国民在使用人工智能的同时，也能维护个人基本私隐权。塞里恩说，应将私隐视为一项人权，是行使其他基本权利的要素。人工智能模型可以分析并尝试预测人类行为和兴趣的各个方面，并将之用于做出针对相关人士的自动决策。塞里恩说，这些人工智能分析可能影响当事人是否获得工作机会、是否有资格获得贷款、保费金额，甚至引起非法行为的怀疑.\n\n
+     English Summarized: Privacy Commissioner requires federal legislation to regulate artificial intelligence"
+  Three:
+    "Chinese Original Text: 由於安省政府已經通過立法，制訂有關法例防止新冠狀病毒傳播，省內各企業及居民都必須遵守有關的安全措施。萬錦市政府更特別推出有關法規簡體字的中文版。由於根據《安大略省重新開放法案》，公共衛生督察和市政官員可以執行相關法規。未遵守安全措施的企業將被開告票並處以罰款，屢屢違規的企業可能面臨暫時關閉。網頁中包括各種有關文件的英文版，其中《COVID-19工作場所安全清單》、《強制使用口罩和面部遮擋物》、《幫助阻止COVID-19傳播》等有關須知均有簡體中文版本。網頁內並包括語音熱線電話905.477.5530， 支援175種不同語言，歡迎居民使用.\n\n
+     English Summarized: Notice to Markham City Government to Launch Simplified Chinese Version of COVID-19 Regulations"

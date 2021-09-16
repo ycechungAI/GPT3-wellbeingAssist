@@ -1,0 +1,46 @@
+[tool.poetry]
+name = "GPT3-wellbeing"
+version = "0.1.0"
+description = ""
+authors = ["Eugene Chung <ycechung@myseneca.ca>"]
+
+[tool.black]
+line-length = 90
+target-version = ['py36']
+include = '\.pyi?$'
+exclude = '''
+/(
+    \.eggs
+    | \.git
+    | \.__pycache__
+    | \.mypy_cache
+    | \.tox
+    | \.venv
+    | \.env
+    | _build
+    | buck-out
+    | build
+    | dist
+)/
+'''
+
+[tool.poetry.dependencies]
+python = "^3.6"
+streamlit = "^0.65"
+openai = "^0.2.4"
+openai-finetune = "^0.0.1-rc.9"
+requests = "^2.24.0"
+loguru = "^0.5.1"
+pyyaml = "^5.3.1"
+
+[tool.poetry.dev-dependencies]
+pytest = "^5.2"
+jupyter = "^1.0.0"
+
+[tool.poetry.scripts]
+st-server = "scripts:st_server"
+migrate = "scripts:migrations"
+
+[build-system]
+requires = ["poetry>=0.12"]
+build-backend = "poetry.masonry.api"
