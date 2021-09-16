@@ -1,6 +1,12 @@
+# flake8: noqa
+try:
+    import json
+except ImportError:
+    import simplejson as json
+import sqlite3
 from pathlab import Pathname
 from time import perf_counter
-
+from typing import Dict
 
 
 import openai
@@ -8,8 +14,16 @@ import streamlit as st
 import yaml
 from openai.openai_objects import OpenAIObject
 from app.app_config import PARAMS, GPT3_CONFIG_PAATH, MODELS, DATASETS
+from loguru import logger
 
 IMAGE_PATH = Path(__file__).parents[2] / "assets"
+
+
+@st.cache(allow_output_mutation=True)
+def db_conn():
+    DB_PATH = Path(__file__).parents[2] / "db" / "results.db"
+    logger.info(f"Connecting to DB: {str(DB_PATH)}")
+    return sqlite3.connect(str(DB_PATH), check_same_thread=False)
 
 def results() -> None:
 	debug = st.sidebar.selectbox("Debug mode:", [False, True])
@@ -109,7 +123,8 @@ def results() -> None:
 	    if stop:
 	    	st.error("Process stoppped")
 	    	st.stop()
-
+	    # except Exception as err:
+    	#     st.error(f"[ERROR]:: {err}")
 
 	def load_primes(prime: str) -> Dict:
 		with open(DATASETS[prime], "r") as file_handle:

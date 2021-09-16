@@ -1,3 +1,4 @@
+
 import streamlit as st
 import requests
 import time
@@ -7,12 +8,8 @@ import os
 import numpy as np
 from prompts import patient_feeling_unwell, patient_answered_question, what_to_ask_next, extract_symptoms_from_patient_answer
 from dotenv import load_dotenv
-from app.pages.results import results
 
-PAGES = ["Chatbot Page", "Results Page"]
-page_select = st.sidebar.radio["Pages", options=PAGES]
-
-if page_select == "Chatbot Page":
+def ui() -> None:
     load_dotenv('.env')
     # Formatting the app bg and text color
     st.markdown(
@@ -25,11 +22,12 @@ if page_select == "Chatbot Page":
     """,
         unsafe_allow_html=True,
     )
+
     # Setting up the Title
     st.title('Synth : Doc Assistant')
     st.title('Clinical Trial Assistance with GPT-3 :wave:')
     st.write('''Check in with me regularly to improve drug research.''')
-    st.image('./ai-bot.jpg', use_column_width=True)
+    st.image('../assets/ai-bot.jpg', use_column_width=True)
     input = st.text_input('Send Robo a message:')
 
     if st.button('Send'):
@@ -38,6 +36,7 @@ if page_select == "Chatbot Page":
             f = open("storage.txt", "a")
             f.write(str(input + '  \n'))
             f.close()
+
             #Step 2 after Step 1
             try:
                 if np.load('state.npy') == 1:
@@ -50,6 +49,7 @@ if page_select == "Chatbot Page":
                     pass
             except:
                 pass
+
             # First Question Save -1 if Ok, 0 otherwise
             try:
                 if os.path.isfile('state.npy') == True and np.load('state.npy') == -2:
@@ -81,6 +81,7 @@ if page_select == "Chatbot Page":
                         np.save('state', -2) #done state
             except:
                 pass
+
             # return last 5 logged messages
             r = reversed(list(open("storage.txt", "r").readlines()))
             text = ""
@@ -89,6 +90,3 @@ if page_select == "Chatbot Page":
                     text += line + '  \n'
             st.info(text)
             print(np.load('state.npy'))
-    elif page_select == "Results Page"
-        st.title("GPT Experimentation")
-        results()

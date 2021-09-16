@@ -21,13 +21,15 @@ Legal aspect?
 
 # Setup
 
+- pip install pysqlite3
+
 - Add your OpenAI key to `gpt3_config.yml` in this format:
 
 ```yaml
 GPT3_API: ab-XXXXXXXXXXXXXXXXXXXXXXXX
 ```
 - Or you can add it via the `streamlit` app directly.
-- Install `poetry`. Follow the [official site](https://python-poetry.org/docs/#installation)
+- Install `poetry`. Follow the [official site](https://python-poetry.org/docs/#installation) or [this cookbook](https://soumendra.gitbook.io/deeplearning-cookbook/setting-up/setting-up-poetry-for-your-project)
 - Once `poetry` is installed, run `poetry install`. This will download all the packages needed (ideally in `.venv`) as well as setup the repository.
 - To run migrations: `poetry run migrate`
 
@@ -38,11 +40,15 @@ GPT3_API: ab-XXXXXXXXXXXXXXXXXXXXXXXX
 # Adding new primes/dataset
 - Create a `*.yml` or `*.yaml` file in `datasets`, this file would be available in the `streamlit` app in the dropdown
 
-```
+# Running
+[x] only works on streamlit run home.py when you cd into the app folder
+[ ] getting the script to work by just running bash script run.sh
+
 If you use this project, do help out:
 Follow and Star the project
 ```
 
+https://ibb.co/TgH5p6t/experiment1.png
 
 ## ======================================
 ## DEPRECIATED

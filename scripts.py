@@ -1,17 +1,17 @@
+import click
+from loguru import logger
+
 import os
 import subprocess
 from pathlib import Path
 
-import click
-from loguru import logger
-
-THIS_DIRECTORY = Path(__file__).parent
+THIS_DIRECTORY = os.path.join(os.path.dirname(__file__), '..')
 
 @click.command()
 def st_server():
     logger.info("Starting server...")
     subprocess.run(
-        ["poetry", "run", "streamlit", "run", str(THIS_DIRECTORY / "app/ui.py"),],
+        ["poetry", "run", "streamlit", "run", str(THIS_DIRECTORY / "GPT3-wellbeing/app/home.py"),],
         check=True,
         universal_newlines=True,
     )
