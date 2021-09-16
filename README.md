@@ -49,7 +49,7 @@ Follow and Star the project
 
 # Screenshot
 
-<img src="https://ibb.co/TgH5p6t/experiment1.png"
+<img src="https://i.ibb.co/BCgRdbB/experiment1.png"
      alt="program running on experimental version"
      style="float: left; margin-right: 10px;" />
 
