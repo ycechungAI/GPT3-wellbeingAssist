@@ -27,7 +27,7 @@ Legal aspect?
 GPT3_API: ab-XXXXXXXXXXXXXXXXXXXXXXXX
 ```
 - Or you can add it via the `streamlit` app directly.
-- Install `poetry`. Follow the [official site](https://python-poetry.org/docs/#installation) or [this cookbook](https://soumendra.gitbook.io/deeplearning-cookbook/setting-up/setting-up-poetry-for-your-project)
+- Install `poetry`. Follow the [official site](https://python-poetry.org/docs/#installation)
 - Once `poetry` is installed, run `poetry install`. This will download all the packages needed (ideally in `.venv`) as well as setup the repository.
 - To run migrations: `poetry run migrate`
 
