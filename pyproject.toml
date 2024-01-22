@@ -34,7 +34,7 @@ openai-finetune = "*"
 requests = "^2.31.0"
 loguru = "^0.7.2"
 pyyaml = "*"
-tokenizers = "^0.14.0"
+tokenizers = ">=0.14"
 transformers = "^4.36.0"
 
 [tool.poetry.dev-dependencies]
