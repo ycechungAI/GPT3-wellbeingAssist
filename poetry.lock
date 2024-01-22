@@ -987,7 +987,7 @@ blobfile = ">=0.11.0"
 numpy = "*"
 openai = ">=0.2.3"
 requests = {version = ">=2.20", markers = "python_version >= \"3.0\""}
-transformers = "<3.0.0"
+transformers = ">=4.36.0"
 
 [[package]]
 name = "packaging"
