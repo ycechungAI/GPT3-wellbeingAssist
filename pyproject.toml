@@ -35,7 +35,7 @@ requests = "^2.31.0"
 loguru = "^0.7.2"
 pyyaml = "*"
 tokenizers = "^0.14.0"
-transformers = "^4.21"
+transformers = "^4.36.0"
 
 [tool.poetry.dev-dependencies]
 pytest = "^7.4.4"
