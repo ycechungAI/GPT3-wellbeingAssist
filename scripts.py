@@ -11,7 +11,7 @@ THIS_DIRECTORY = os.path.join(os.path.dirname(__file__), '..')
 def st_server():
     logger.info("Starting server...")
     subprocess.run(
-        ["poetry", "run", "streamlit", "run", str(THIS_DIRECTORY / "GPT3-wellbeing/app/home.py"),],
+        ["poetry", "run", "streamlit", "run", str(THIS_DIRECTORY / "app/ui.py"),],
         check=True,
         universal_newlines=True,
     )

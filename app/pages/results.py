@@ -43,7 +43,7 @@ def results() -> None:
 				st.write("(OpenAI key loaded)")
 
 		PARAMS["engine"] = st.sidebar.selectbox("Select OpenAI model('engine'):", MODELS)
-		st.markdown(f"Model selected: ` {PARAMS["engine"]}`")
+		st.markdown(f"Model selected:`{PARAMS["engine"]}`")
 
 		experiment_name = st.text_input("Experiment Name *", value="default-exp")
 
