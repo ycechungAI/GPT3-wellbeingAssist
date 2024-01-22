@@ -12,12 +12,11 @@ import openai
 import streamlit as st
 import yaml
 #from app_config import DATASETS, GPT3_CONFIG_PATH, MODELS, PARAMS
-from loguru import logger
 from openai.openai_object import OpenAIObject
 
 #app_config temp
 import re
-MODELS           = ["davinci-codex", "cushman-codex", "davinci", "curie", "babbage", "ada"]
+MODELS           = ["davinci-002", "babbage--002", "gpt-3.5-turbo", "gpt-3.5-turbo-0301"]
 GPT3_CONFIG_PATH = Path(__file__).parents[2] / "gpt3_config.yml"
 DATASET_PATH     = Path(__file__).parents[2] / "datasets"
 DATASETS         = dict(

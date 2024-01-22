@@ -4,9 +4,9 @@ channels:
   - conda-forge
   - defaults
 dependencies:
-  - flask=1.1.2=pyhd3eb1b0_0
+  - flask=2.2.2
   - flask_cors=3.0.10=pyhd3eb1b0_0
-  - python=3.8.5
+  - python=3.10.13
   - pip:
     - openai==0.6.3
 prefix: /Users/j.spranger/miniconda3/envs/sandbox
