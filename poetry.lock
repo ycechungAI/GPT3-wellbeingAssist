@@ -1101,10 +1101,10 @@ files = [
 
 [[package]]
 name = "pillow"
-version = "7.2.0"
+version = "10.0.1"
 description = "Python Imaging Library (Fork)"
 optional = false
-python-versions = ">=3.5"
+python-versions = ">=3.8"
 files = [
     {file = "Pillow-7.2.0-cp35-cp35m-macosx_10_10_intel.whl", hash = "sha256:1ca594126d3c4def54babee699c055a913efb01e106c309fa6b04405d474d5ae"},
     {file = "Pillow-7.2.0-cp35-cp35m-manylinux1_i686.whl", hash = "sha256:c92302a33138409e8f1ad16731568c55c9053eee71bb05b6b744067e1b62380f"},
