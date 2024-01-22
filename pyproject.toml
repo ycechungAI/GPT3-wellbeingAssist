@@ -33,7 +33,7 @@ openai = "^0.2.4"
 openai-finetune = "^0.0.1-rc.9"
 requests = "^2.24.0"
 loguru = "^0.5.1"
-pyyaml = "^5.3.1"
+pyyaml = "^5.4"
 
 [tool.poetry.dev-dependencies]
 pytest = "^5.2"
