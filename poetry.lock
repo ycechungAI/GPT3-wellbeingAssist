@@ -1236,10 +1236,10 @@ files = [
 
 [[package]]
 name = "pyarrow"
-version = "1.0.1"
+version = "14.0.1"
 description = "Python library for Apache Arrow"
 optional = false
-python-versions = ">=3.5"
+python-versions = ">=3.8"
 files = [
     {file = "pyarrow-1.0.1-cp35-cp35m-macosx_10_9_intel.whl", hash = "sha256:d58ef5bbf548ffa0ec61d37bb95b1ebdf4209e5c8579b53213cf1d9bd804bfe9"},
     {file = "pyarrow-1.0.1-cp35-cp35m-manylinux1_x86_64.whl", hash = "sha256:0ec631db5c268acc25016278d253584dffc93a0dd44c07847f2477d6eb5b89d5"},
