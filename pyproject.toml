@@ -36,14 +36,16 @@ loguru = "^0.7.2"
 pyyaml = "*"
 tokenizers = ">=0.14"
 transformers = "^4.38.0"
-
-[tool.poetry.dev-dependencies]
-pytest = "^7.4.4"
-jupyter = "^1.0.0"
+fpdf = "*"
+python-dotenv = "*"
 
 [tool.poetry.scripts]
 st-server = "scripts:st_server"
 migrate = "scripts:migrations"
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^7.4.4"
+jupyter = "^1.0.0"
 
 [build-system]
 requires = ["poetry==2.2"]
