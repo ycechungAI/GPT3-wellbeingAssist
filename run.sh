@@ -1,2 +1,3 @@
-#!bin/sh
-poetry run st-server
+#!/bin/sh
+cd app
+poetry run streamlit run ui.py

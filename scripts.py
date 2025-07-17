@@ -5,13 +5,21 @@ import os
 import subprocess
 from pathlib import Path
 
-THIS_DIRECTORY = os.path.join(os.path.dirname(__file__), '..')
+THIS_DIRECTORY = Path(__file__).parent.resolve()
+
 
 @click.command()
 def st_server():
+    """Starts the streamlit server."""
     logger.info("Starting server...")
     subprocess.run(
-        ["poetry", "run", "streamlit", "run", str(THIS_DIRECTORY / "app/ui.py"),],
+        [
+            "poetry",
+            "run",
+            "streamlit",
+            "run",
+            str(THIS_DIRECTORY / "app" / "ui.py"),
+        ],
         check=True,
         universal_newlines=True,
     )
