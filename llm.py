@@ -4,6 +4,7 @@ import json
 import os
 from pathlib import Path
 
+import openai
 from dotenv import load_dotenv
 from openai import OpenAI
 
@@ -17,8 +18,9 @@ FREE_ROUTER = "openrouter/free"  # routes to a random free model; can land on sl
 # OpenRouter tries automatically if the first is unavailable.
 FREE_MODELS = ["qwen/qwen3.8-27b:free", "apodex/apodex-1.1-mini:free"]
 MODEL = os.getenv("OPENROUTER_MODEL", FREE_MODELS[0])
-# Free models can stall; fail with a visible error rather than the SDK's 10-minute default.
-TIMEOUT_SECONDS = 60
+# Free models can stall. Give each model this long, then move on to the next free model,
+# rather than waiting out the SDK's 10-minute default.
+TIMEOUT_SECONDS = 45
 
 
 def is_free(model: str) -> bool:
@@ -31,21 +33,41 @@ def api_key(entered: str | None = None) -> str | None:
 
 
 def client(key: str) -> OpenAI:
-    return OpenAI(api_key=key, base_url=BASE_URL, timeout=TIMEOUT_SECONDS, max_retries=1)
+    return OpenAI(api_key=key, base_url=BASE_URL, timeout=TIMEOUT_SECONDS, max_retries=0)
 
 
 def _ask(client: OpenAI, system: str, user: str, model: str, **kwargs) -> str:
     if not is_free(model):
         raise ValueError(f"{model!r} is not a free model; use 'openrouter/free' or a ':free' id")
-    fallbacks = [m for m in FREE_MODELS if m != model]
-    response = client.chat.completions.create(
-        model=model,
-        messages=[{"role": "system", "content": system}, {"role": "user", "content": user}],
-        temperature=0,
-        extra_body={"models": [model, *fallbacks]},  # OpenRouter: try these in order
-        **kwargs,
-    )
-    return (response.choices[0].message.content or "").strip()
+    order = [model, *(m for m in FREE_MODELS if m != model)]
+    for i, current in enumerate(order):
+        try:
+            response = client.chat.completions.create(
+                model=current,
+                messages=[{"role": "system", "content": system}, {"role": "user", "content": user}],
+                temperature=0,
+                # OpenRouter also falls back by itself if a model is unavailable.
+                extra_body={"models": order[i:]},
+                **kwargs,
+            )
+        except openai.APITimeoutError:
+            if current == order[-1]:
+                raise
+            continue  # too slow: try the next free model
+        return (response.choices[0].message.content or "").strip()
+
+
+def friendly_error(err: Exception) -> str:
+    """Short, patient-facing text for an API failure (details go to the server log)."""
+    if isinstance(err, openai.APITimeoutError):
+        return "The free models are slow right now. Please send your message again."
+    if isinstance(err, openai.RateLimitError):
+        return "The free model is busy (rate limit). Please wait a minute and try again."
+    if isinstance(err, openai.AuthenticationError):
+        return "The OpenRouter API key was rejected. Check it in the sidebar or .env."
+    if isinstance(err, ValueError):
+        return str(err)
+    return "Something went wrong talking to the model. Please try again."
 
 
 def _is_yes(text: str) -> bool:
@@ -78,7 +100,7 @@ def extract_symptoms(client: OpenAI, text: str, model: str = MODEL) -> list[dict
     except (json.JSONDecodeError, AttributeError):
         return []
     return [
-        {"symptom": str(i.get("symptom", "")).strip(), "when": str(i.get("when", "Unknown"))}
+        {"symptom": str(i["symptom"]).strip(), "when": str(i.get("when") or "Unknown").strip()}
         for i in items
         if isinstance(i, dict) and i.get("symptom")
     ]

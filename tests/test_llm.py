@@ -60,3 +60,33 @@ def test_extract_symptoms_strips_code_fence():
 def test_extract_symptoms_tolerates_bad_json():
     assert llm.extract_symptoms(FakeClient("not json"), "x") == []
     assert llm.extract_symptoms(FakeClient('{"symptoms": ["bad", {}]}'), "x") == []
+
+
+def test_extract_symptoms_null_when_is_unknown():
+    client = FakeClient('{"symptoms": [{"symptom": "Knee pain", "when": null}]}')
+    assert llm.extract_symptoms(client, "knee") == [{"symptom": "Knee pain", "when": "Unknown"}]
+
+
+def test_timeout_moves_to_next_free_model():
+    import httpx2
+    import openai
+
+    calls = []
+
+    def create(**kwargs):
+        calls.append(kwargs["model"])
+        if len(calls) == 1:
+            raise openai.APITimeoutError(request=httpx2.Request("POST", "http://x"))
+        return FakeClient("Yes")._create(**kwargs)
+
+    client = FakeClient()
+    client.chat.completions.create = create
+    assert llm.is_unwell(client, "x", model=llm.FREE_MODELS[0]) is True
+    assert calls == llm.FREE_MODELS[:2]
+
+
+def test_friendly_errors_hide_raw_payloads():
+    import openai
+
+    assert "slow" in llm.friendly_error(openai.APITimeoutError(request=None))
+    assert llm.friendly_error(RuntimeError('{"routing_funnel": ...}')).startswith("Something")

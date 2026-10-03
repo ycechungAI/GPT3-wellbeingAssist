@@ -11,7 +11,7 @@ def test_api_key_order(monkeypatch):
 
 def test_client_has_short_timeout():
     c = llm.client("k")
-    assert c.timeout == llm.TIMEOUT_SECONDS and c.max_retries == 1
+    assert c.timeout == llm.TIMEOUT_SECONDS and c.max_retries == 0
     assert str(c.base_url).startswith("https://openrouter.ai/api/v1")
 
 

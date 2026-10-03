@@ -51,8 +51,8 @@ run.sh           # uv run streamlit run ui.py (works from any directory)
   OpenRouter fallback (the `models` list). Both were measured as fast and accurate on these
   prompts. The `openrouter/free` router was rejected because it can land on slow models.
   `OPENROUTER_MODEL` can pin any `:free` id; any other model is refused before a request is
-  sent. Requests time out after 60 seconds with one retry, so a stalled free model shows an
-  error and the page doesn't hang.
+  sent. Each model gets 45 seconds; on a timeout the request moves to the next free model, and if
+  all are slow the chat shows a short error, so the page never hangs.
 - D3. **Key:** read from the sidebar first, then from `OPENROUTER_API_KEY` in the environment
   or `.env`. `.env` is gitignored.
 - D4. **Check-in flow:** state lives in `st.session_state`, using `st.chat_message` and

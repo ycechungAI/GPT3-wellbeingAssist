@@ -34,8 +34,8 @@ Open issue: the legal aspects of handling patient data.
    The app uses **free models only**, so no credits are spent. The default model is
    `qwen/qwen3.8-27b:free`, and `apodex/apodex-1.1-mini:free` is an automatic fallback. Both
    were picked for speed. To use another free model, set `OPENROUTER_MODEL` to its `:free`
-   id. Free models have rate limits, and requests time out after 60 seconds; either way the
-   chat shows the error.
+   id. Free models have rate limits. A model that takes over 45 seconds is skipped for the
+   fallback. Either way, the chat shows a short error message.
 
    Some free models only work if you allow them in your
    [OpenRouter privacy settings](https://openrouter.ai/settings/privacy). The defaults don't

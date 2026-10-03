@@ -1,5 +1,6 @@
 """Synth: Doc Assistant. One-page patient check-in."""
 
+import logging
 from pathlib import Path
 
 import streamlit as st
@@ -7,6 +8,7 @@ import streamlit as st
 import llm
 
 HERE = Path(__file__).resolve().parent
+log = logging.getLogger(__name__)
 GREETING = "Hello! How is your wellbeing today?"
 FAREWELL = "I am happy to hear that. Let's check in again soon!"
 THANKS = "Thank you. Here is a summary of what you told me:"
@@ -61,7 +63,7 @@ key = llm.api_key(
         help="Optional if OPENROUTER_API_KEY is set in your environment or .env.",
     )
 )
-client = llm.client(key) if key else None
+client = st.cache_resource(llm.client)(key) if key else None
 if not client:
     st.warning("Add an OpenRouter API key in the sidebar to continue (free models only).")
 
@@ -79,5 +81,6 @@ elif client and (text := st.chat_input("Send Robo a message")):
         with st.spinner("Thinking..."):
             handle(client, text)
     except Exception as err:  # surface API/network errors in the chat, don't crash
-        say(f"Sorry, something went wrong talking to the model: {err}")
+        log.exception("model call failed")
+        say(f"Sorry: {llm.friendly_error(err)}")
     st.rerun()
