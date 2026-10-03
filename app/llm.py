@@ -6,7 +6,7 @@ import openai
 from openai import OpenAI
 
 import prompts
-from config import DEFAULT_MODEL, FREE_MODELS, is_free
+from config import DEFAULT_MODEL, FREE_MODELS, NO_REASONING, is_free
 
 
 def _ask(client: OpenAI, system: str, user: str, model: str, **kwargs) -> str:
@@ -20,7 +20,7 @@ def _ask(client: OpenAI, system: str, user: str, model: str, **kwargs) -> str:
                 messages=[{"role": "system", "content": system}, {"role": "user", "content": user}],
                 temperature=0,
                 # OpenRouter also falls back by itself if a model is unavailable.
-                extra_body={"models": order[i:]},
+                extra_body={"models": order[i:], **NO_REASONING},
                 **kwargs,
             )
         except openai.APITimeoutError:

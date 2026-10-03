@@ -50,7 +50,7 @@ def save_result(
             (
                 result_id,
                 experiment_name,
-                json.dumps(api_params),
+                json.dumps(api_params, ensure_ascii=False),
                 response_time,
                 json.dumps(outputs, ensure_ascii=False),
                 language,
