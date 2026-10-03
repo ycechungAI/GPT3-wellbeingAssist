@@ -1,72 +1,65 @@
-## GPT3-wellbeingAssist
+# GPT3-wellbeingAssist: experiment lab
 
-# Main Problems: 
-Gain information about patients health status in between doctor's visits 
-Put it in a structured format
+A prompt experiment lab, from the experimentation branch of GPT3-wellbeingAssist. Pick a
+few-shot dataset (for example Chinese → English summarization or Hindi → English
+translation), write a prompt, and run it against one or more **free** models side by side.
+Every run is saved, and the Results page compares models by output and latency.
 
-# Outcome: 
-Improve clinical trials effectiveness and patients well being
+The patient check-in assistant from the main project is included as a demo page.
 
-Given the patient’s answer….: 
-Did it fulfill our question? [Yes, No]
-Do we need to ask a follow-up question? [Yes, No]
-What do we need to ask more specifically about? 
-What are his symptoms and when did they occur? 
-How can we categorize his answer (structure the data)? 
+## Quick start
 
-# Open Issues: 
-Legal aspect?
+1. Install [uv](https://docs.astral.sh/uv/getting-started/installation/):
 
-## NEW INSTRUCTIONS
+   ```bash
+   curl -LsSf https://astral.sh/uv/install.sh | sh
+   ```
 
-# Setup
+2. Install dependencies (uv fetches Python 3.12+ if needed):
 
-- pip install pysqlite3
+   ```bash
+   uv sync
+   ```
 
-- Add your OpenAI key to `gpt3_config.yml` in this format:
+3. Add an [OpenRouter API key](https://openrouter.ai/keys). Run `cp .env.example .env`,
+   then fill in `OPENROUTER_API_KEY=`, or paste the key into the app's sidebar. `.env` is
+   gitignored.
 
-```yaml
-GPT3_API: ab-XXXXXXXXXXXXXXXXXXXXXXXX
+   The app uses **free models only**, so no credits are spent. The default model is
+   `qwen/qwen3.8-27b:free`, and `apodex/apodex-1.1-mini:free` is also offered. To change the
+   default, set `OPENROUTER_MODEL` in `.env` to any `:free` id. Some free models only work if
+   you allow them in your [OpenRouter privacy settings](https://openrouter.ai/settings/privacy).
+
+4. Run the app, then open http://localhost:8501:
+
+   ```bash
+   ./run.sh
+   ```
+
+## Pages
+
+- **Home (lab):** choose a dataset and the free models to compare, then run. Each model gets
+  its own column with its output and latency, and each successful run is saved to
+  `db/results.db`.
+- **Results:** a summary per model (number of runs, median latency) and every saved run.
+  Download either table as CSV from its toolbar.
+- **Check-in:** the patient check-in chat.
+
+## Adding datasets
+
+Add a `*.yml` or `*.yaml` file to `datasets/`. It then appears in the lab's dropdown. For the
+format, see the existing files: `name`, `language`, `nlp_task`, `input`, `output`, and a
+`dataset` map of examples.
+
+## Development
+
+```bash
+uv run pytest
 ```
-- Or you can add it via the `streamlit` app directly.
-- Install `poetry`. Follow the [official site](https://python-poetry.org/docs/#installation) or [this cookbook](https://soumendra.gitbook.io/deeplearning-cookbook/setting-up/setting-up-poetry-for-your-project)
-- Once `poetry` is installed, run `poetry install`. This will download all the packages needed (ideally in `.venv`) as well as setup the repository.
-- To run migrations: `poetry run migrate`
 
-# Running the app
-- To run the `streamlit` app: `poetry run st-server` or bash run.sh
-- You will now be able to view the application @ `localhost:8000`
-
-# Adding new primes/dataset
-- Create a `*.yml` or `*.yaml` file in `datasets`, this file would be available in the `streamlit` app in the dropdown
-
-# Running
-[x] only works on streamlit run home.py when you cd into the app folder
-[ ] getting the script to work by just running bash script run.sh
-
-If you use this project, do help out:
-Follow and Star the project
+```bash
+uv run ruff check .
 ```
 
-https://ibb.co/TgH5p6t/experiment1.png
-
-## ======================================
-## DEPRECIATED
-## ======================================
-# Environment - Conda python3
-conda env create --name envname --file=environment_droplet.yml
-conda activate envname
-
-# Install Openai and Flask 
-pip install openai
-pip install python-dotenv
-pip install Flask
-pip install fpdf
-
-# Deactivate Environment
-conda deactivate
-
-# To run Flask
-$ export FLASK_APP=backend_functions.py 
-
-$ flask run
+The tests fake the model API, so they need no API key or network connection. The changes
+behind this version are described in [docs/SPEC.md](docs/SPEC.md).

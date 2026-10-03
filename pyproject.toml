@@ -1,48 +1,34 @@
-[tool.poetry]
-name = "GPT3-wellbeing"
-version = "0.1.0"
-description = ""
-authors = ["Eugene Chung <ycechung@myseneca.ca>"]
+[project]
+name = "gpt3-wellbeing-experiments"
+version = "0.2.0"
+description = "Prompt experiment lab: run few-shot datasets against free LLMs side by side and compare results."
+authors = [{ name = "Eugene Chung", email = "ycechung@myseneca.ca" }]
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "openai>=2.0",
+    "python-dotenv>=1.0",
+    "pyyaml>=6.0",
+    "streamlit>=1.50",
+]
 
-[tool.black]
-line-length = 90
-target-version = ['py36']
-include = '\.pyi?$'
-exclude = '''
-/(
-    \.eggs
-    | \.git
-    | \.__pycache__
-    | \.mypy_cache
-    | \.tox
-    | \.venv
-    | \.env
-    | _build
-    | buck-out
-    | build
-    | dist
-)/
-'''
+[dependency-groups]
+dev = [
+    "pytest>=8.0",
+    "ruff>=0.6",
+]
 
-[tool.poetry.dependencies]
-python = "^3.6"
-alembic = "^1.4.2"
-sqlalchemy = "^1.3.18"
-streamlit = "^0.65"
-openai = "^0.2.4"
-openai-finetune = "^0.0.1-rc.9"
-requests = "^2.24.0"
-loguru = "^0.5.1"
-pyyaml = "^5.3.1"
+[tool.uv]
+package = false
 
-[tool.poetry.dev-dependencies]
-pytest = "^5.2"
-jupyter = "^1.0.0"
+[tool.pytest.ini_options]
+pythonpath = ["app"]
+testpaths = ["tests"]
 
-[tool.poetry.scripts]
-st-server = "scripts:st_server"
-migrate = "scripts:migrations"
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+src = ["app", "tests"]
 
-[build-system]
-requires = ["poetry>=0.12"]
-build-backend = "poetry.masonry.api"
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B"]
