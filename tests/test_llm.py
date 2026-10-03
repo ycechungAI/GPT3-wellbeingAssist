@@ -96,3 +96,22 @@ def test_calls_turn_reasoning_off():
     client = FakeClient("Yes")
     llm.is_unwell(client, "x")
     assert client.calls[0]["extra_body"]["reasoning"] == {"enabled": False}
+
+
+def test_model_that_cannot_disable_reasoning_is_retried_with_default():
+    import httpx2
+    import openai
+
+    sent = []
+
+    def create(**kwargs):
+        sent.append(kwargs["extra_body"])
+        if "reasoning" in kwargs["extra_body"]:
+            response = httpx2.Response(400, request=httpx2.Request("POST", "http://x"))
+            raise openai.BadRequestError("reasoning is mandatory", response=response, body=None)
+        return FakeClient("Yes")._create(**kwargs)
+
+    client = FakeClient()
+    client.chat.completions.create = create
+    assert llm.is_unwell(client, "x") is True
+    assert ["reasoning" in body for body in sent] == [True, False]
