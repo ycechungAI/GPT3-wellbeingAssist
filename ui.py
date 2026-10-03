@@ -1,95 +1,83 @@
+"""Synth: Doc Assistant. One-page patient check-in."""
+
+from pathlib import Path
+
 import streamlit as st
-import requests
-import time
-from fpdf import FPDF
-import base64
-import os
-import numpy as np
-from prompts import patient_feeling_unwell, patient_answered_question, what_to_ask_next, extract_symptoms_from_patient_answer
 
-# Formatting the app bg and text color
-st.markdown(
-    """
-<style>
-.reportview-container  {
-    background-image: linear-gradient(#f5f7fa,#c3cfe2);
-}
-</style>
-""",
-    unsafe_allow_html=True,
+import llm
+
+HERE = Path(__file__).resolve().parent
+GREETING = "Hello! How is your wellbeing today?"
+FAREWELL = "I am happy to hear that. Let's check in again soon!"
+THANKS = "Thank you. Here is a summary of what you told me:"
+
+
+def reset() -> None:
+    st.session_state.stage = "greet"
+    st.session_state.messages = [{"role": "assistant", "content": GREETING}]
+    st.session_state.complaint = ""
+    st.session_state.question = GREETING
+    st.session_state.symptoms = []
+
+
+def say(text: str) -> None:
+    st.session_state.messages.append({"role": "assistant", "content": text})
+
+
+def handle(client, text: str) -> None:
+    """Advance the check-in: greet -> follow_up -> done."""
+    state = st.session_state
+    if state.stage == "greet":
+        if llm.is_unwell(client, text):
+            state.complaint = text
+            state.question = llm.next_question(client, text)
+            say(state.question)
+            state.stage = "follow_up"
+        else:
+            say(FAREWELL)
+            state.stage = "done"
+    elif state.stage == "follow_up":
+        if not llm.answered_question(client, state.question, text):
+            say(f"Sorry, I didn't quite get that. {state.question}")
+            return
+        state.symptoms = llm.extract_symptoms(client, f"{state.complaint}\n{text}")
+        say(THANKS if state.symptoms else "Thank you, I have noted that down.")
+        state.stage = "done"
+
+
+st.set_page_config(page_title="Synth: Doc Assistant", page_icon=":wave:")
+st.title("Synth: Doc Assistant :wave:")
+st.caption("Clinical trial check-in. Check in with me regularly to improve drug research.")
+st.image(str(HERE / "ai-bot.jpg"), width=160)
+
+if "stage" not in st.session_state:
+    reset()
+st.sidebar.button("New check-in", on_click=reset)
+key = llm.api_key(
+    st.sidebar.text_input(
+        "OpenRouter API key",
+        key="api_key",
+        type="password",
+        help="Optional if OPENROUTER_API_KEY is set in your environment or .env.",
+    )
 )
+client = llm.client(key) if key else None
+if not client:
+    st.warning("Add an OpenRouter API key in the sidebar to continue (free models only).")
 
+for message in st.session_state.messages:
+    st.chat_message(message["role"]).write(message["content"])
 
-# Setting up the Title
-st.title('Synth : Doc Assistant')
-st.title('Clinical Trial Assistance with GPT-3 :wave:')
-st.write('''Check in with me regularly to improve drug research.''')
-st.image('./ai-bot.jpg', use_column_width=True)
-input = st.text_input('Send Robo a message:')
+if st.session_state.symptoms:
+    st.table(st.session_state.symptoms)
 
-if st.button('Send'):
-    with st.spinner(text='Sending Message...'):
-        #Save last Message
-        f = open("storage.txt", "a")
-        f.write(str(input + '  \n'))
-        f.close()
-
-
-        #Step 2 after Step 1
-        try:
-            if np.load('state.npy') == 1:
-                output = extract_symptoms_from_patient_answer(input)
-                print(output)
-                f = open("storage.txt", "a")
-                f.write(str("{}".format(output) + '  \n'))
-                f.close()
-                np.save('state', -1) #done state
-                pass
-        except:
-            pass
-
-
-
-        # First Question Save -1 if Ok, 0 otherwise
-        try:
-            if os.path.isfile('state.npy') == True and np.load('state.npy') == -2:
-                print("THIS IS WHAT WE GET",input)
-                first_question = patient_feeling_unwell(input)
-                if first_question == False or input == 'I am feeling good.':
-                    f = open("storage.txt", "a")
-                    f.write(str("Bot: I am happy to hear that. Let's check-in again soon!" + '  \n'))
-                    f.close()
-                    np.save('state', -1) #done state
-                    os.remove("state.npy")
-                else:
-                    np.save('state', 0) #Nest Question
-                    input = what_to_ask_next(input)
-                    f = open("storage.txt", "a")
-                    f.write('Bot:' + str(input + '  \n'))
-                    f.close()
-                    np.save('state', 1)
-                    print("INHERE")
-        except:
-            pass
-
-        # First Question Save -1 if Ok, 0 otherwise
-        try:
-            if os.path.isfile('state.npy') == False:
-                    f = open("storage.txt", "a")
-                    f.write(str("Bot: Hello! How is your wellbeing today?" + '  \n'))
-                    f.close()
-                    np.save('state', -2) #done state
-
-        except:
-            pass
-
-
-
-        # return last 5 logged messages
-        r = reversed(list(open("storage.txt", "r").readlines()))
-        text = ""
-        for idx, line in enumerate(r):
-            if idx <5:
-                text += line + '  \n'
-        st.info(text)
-        print(np.load('state.npy'))
+if st.session_state.stage == "done":
+    st.info("Check-in complete. Use **New check-in** in the sidebar to start again.")
+elif client and (text := st.chat_input("Send Robo a message")):
+    st.session_state.messages.append({"role": "user", "content": text})
+    try:
+        with st.spinner("Thinking..."):
+            handle(client, text)
+    except Exception as err:  # surface API/network errors in the chat, don't crash
+        say(f"Sorry, something went wrong talking to the model: {err}")
+    st.rerun()
