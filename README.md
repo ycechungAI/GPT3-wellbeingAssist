@@ -13,6 +13,19 @@ Given the patient's answer, the assistant decides:
 
 Open issue: the legal aspects of handling patient data.
 
+## Other branches
+
+This repository holds separate projects, one per branch:
+
+- [`working1`](https://github.com/ycechungAI/GPT3-wellbeingAssist/tree/working1) (this one):
+  the updated check-in app, with an experimentation page.
+- [`main`](https://github.com/ycechungAI/GPT3-wellbeingAssist/tree/main): the original
+  hackathon prototype, a single-page check-in, kept working.
+- [`experiment1`](https://github.com/ycechungAI/GPT3-wellbeingAssist/tree/experiment1): a
+  prompt experiment lab that compares free models side by side.
+
+Each has its own README with the same setup steps. Old branches are kept as `archive/*` tags.
+
 ## Quick start
 
 1. Install [uv](https://docs.astral.sh/uv/getting-started/installation/):
