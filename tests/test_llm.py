@@ -86,3 +86,9 @@ def test_friendly_errors_hide_raw_payloads():
 
     assert "slow" in llm.friendly_error(openai.APITimeoutError(request=None))
     assert llm.friendly_error(RuntimeError('{"routing_funnel": ...}')).startswith("Something")
+
+
+def test_checkin_calls_turn_reasoning_off():
+    client = FakeClient("Yes")
+    llm.is_unwell(client, "x")
+    assert client.calls[0]["extra_body"]["reasoning"] == {"enabled": False}

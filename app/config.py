@@ -23,6 +23,9 @@ MODELS = list(dict.fromkeys([DEFAULT_MODEL, *FREE_MODELS, FREE_ROUTER]))
 # Free models can stall. Give each model this long, then move on to the next free model,
 # rather than waiting out the SDK's 10-minute default.
 TIMEOUT_SECONDS = 45
+# OpenRouter's unified switch. Reasoning models can otherwise spend the whole token budget
+# thinking and return an empty answer; models without reasoning ignore it.
+NO_REASONING = {"reasoning": {"enabled": False}}
 
 
 def is_free(model: str) -> bool:
