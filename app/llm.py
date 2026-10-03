@@ -2,22 +2,45 @@
 
 import json
 
+import openai
 from openai import OpenAI
 
 import prompts
-from config import DEFAULT_MODEL, is_free
+from config import DEFAULT_MODEL, FREE_MODELS, is_free
 
 
 def _ask(client: OpenAI, system: str, user: str, model: str, **kwargs) -> str:
     if not is_free(model):
         raise ValueError(f"{model!r} is not a free model; use 'openrouter/free' or a ':free' id")
-    response = client.chat.completions.create(
-        model=model,
-        messages=[{"role": "system", "content": system}, {"role": "user", "content": user}],
-        temperature=0,
-        **kwargs,
-    )
-    return (response.choices[0].message.content or "").strip()
+    order = [model, *(m for m in FREE_MODELS if m != model)]
+    for i, current in enumerate(order):
+        try:
+            response = client.chat.completions.create(
+                model=current,
+                messages=[{"role": "system", "content": system}, {"role": "user", "content": user}],
+                temperature=0,
+                # OpenRouter also falls back by itself if a model is unavailable.
+                extra_body={"models": order[i:]},
+                **kwargs,
+            )
+        except openai.APITimeoutError:
+            if current == order[-1]:
+                raise
+            continue  # too slow: try the next free model
+        return (response.choices[0].message.content or "").strip()
+
+
+def friendly_error(err: Exception) -> str:
+    """Short, user-facing text for an API failure (details go to the server log)."""
+    if isinstance(err, openai.APITimeoutError):
+        return "The free models are slow right now. Please try again."
+    if isinstance(err, openai.RateLimitError):
+        return "The free model is busy (rate limit). Please wait a minute and try again."
+    if isinstance(err, openai.AuthenticationError):
+        return "The OpenRouter API key was rejected. Check it in the sidebar or .env."
+    if isinstance(err, ValueError):
+        return str(err)
+    return "Something went wrong talking to the model. Please try again."
 
 
 def _is_yes(text: str) -> bool:
@@ -57,7 +80,7 @@ def extract_symptoms(client: OpenAI, text: str, model: str = DEFAULT_MODEL) -> l
     except (json.JSONDecodeError, AttributeError):
         return []
     return [
-        {"symptom": str(i.get("symptom", "")).strip(), "when": str(i.get("when", "Unknown"))}
+        {"symptom": str(i["symptom"]).strip(), "when": str(i.get("when") or "Unknown").strip()}
         for i in items
         if isinstance(i, dict) and i.get("symptom")
     ]

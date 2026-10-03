@@ -105,8 +105,10 @@ Decisions:
   `python-dotenv`, and `pyyaml`. For dev: `pytest` and `ruff`. Everything else is removed (B2).
 - D3. **Model API: OpenRouter, free models only.** Calls go through the `openai` SDK pointed
   at `https://openrouter.ai/api/v1`, using Chat Completions. The default model is
-  `openrouter/free`, a router over whichever free models are live, so the app survives
-  individual free models being withdrawn. `OPENROUTER_MODEL` can pin a `:free` id. Any model
+  `qwen/qwen3.8-27b:free`, with `apodex/apodex-1.1-mini:free` as a fallback. Both were
+  measured as fast and accurate on these prompts. The `openrouter/free` router was dropped as
+  the default because it can land on slow models. Each model gets 45 seconds, and a timeout
+  moves the request to the next free model. `OPENROUTER_MODEL` can pin a `:free` id. Any model
   that is not `openrouter/free` or `*:free` is refused before a request is sent. OpenRouter
   ignores unsupported parameters, so no per-model parameter handling is needed. Prompts keep
   the original few-shot examples. Symptom extraction requests JSON mode and tolerates

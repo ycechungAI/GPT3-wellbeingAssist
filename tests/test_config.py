@@ -11,6 +11,6 @@ def test_api_key_order(monkeypatch):
 
 
 def test_model_list_is_free_only():
-    assert config.FREE_ROUTER in config.MODELS
-    assert all(config.is_free(m) for m in config.MODELS)
+    assert config.FREE_MODELS[0] in config.MODELS
+    assert all(config.is_free(m) for m in [*config.MODELS, *config.FREE_MODELS])
     assert not config.is_free("openai/gpt-4o")

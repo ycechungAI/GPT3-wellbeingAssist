@@ -75,7 +75,7 @@ def test_checkin_shows_api_errors(checkin):
     at = checkin(is_unwell=boom)
     at.chat_input[0].set_value("hi").run()
     assert not at.exception
-    assert "rate limited" in chat(at)[-1]
+    assert chat(at)[-1] == "Sorry: Something went wrong talking to the model. Please try again."
 
 
 def test_experimentation_submits_and_saves(monkeypatch):

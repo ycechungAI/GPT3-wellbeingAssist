@@ -14,20 +14,15 @@ DB_PATH = ROOT / "db" / "results.db"
 load_dotenv(ROOT / ".env")
 
 OPENROUTER_BASE_URL = "https://openrouter.ai/api/v1"
-# Free models only. "openrouter/free" routes to whichever free model is available, so it keeps
-# working as individual free models come and go; the others are pinned alternatives.
+# Free models only. Measured 2026-10-03 as fast and accurate on the check-in prompts; the
+# second is the fallback. "openrouter/free" picks a random free model and can land on slow ones.
 FREE_ROUTER = "openrouter/free"
-DEFAULT_MODEL = os.getenv("OPENROUTER_MODEL", FREE_ROUTER)
-MODELS = list(
-    dict.fromkeys(
-        [
-            DEFAULT_MODEL,
-            FREE_ROUTER,
-            "google/gemma-4-31b-it:free",
-            "nvidia/nemotron-3-super-120b-a12b:free",
-        ]
-    )
-)
+FREE_MODELS = ["qwen/qwen3.8-27b:free", "apodex/apodex-1.1-mini:free"]
+DEFAULT_MODEL = os.getenv("OPENROUTER_MODEL", FREE_MODELS[0])
+MODELS = list(dict.fromkeys([DEFAULT_MODEL, *FREE_MODELS, FREE_ROUTER]))
+# Free models can stall. Give each model this long, then move on to the next free model,
+# rather than waiting out the SDK's 10-minute default.
+TIMEOUT_SECONDS = 45
 
 
 def is_free(model: str) -> bool:

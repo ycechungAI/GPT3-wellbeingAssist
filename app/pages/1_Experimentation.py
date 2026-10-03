@@ -7,6 +7,7 @@ import yaml
 
 import config
 import db
+import llm
 from sidebar import llm_client
 
 st.set_page_config(page_title="Experimentation")
@@ -66,7 +67,7 @@ if st.button("Submit", type="primary", disabled=not (client and prompt.strip()))
         try:
             response = client.chat.completions.create(model=model, messages=messages, **params)
         except Exception as err:
-            st.error(f"Request failed: {err}")
+            st.error(f"Request failed: {llm.friendly_error(err)}")
             st.stop()
         elapsed = round(perf_counter() - start, 3)
 
