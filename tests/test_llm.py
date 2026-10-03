@@ -24,7 +24,7 @@ def test_only_free_models_are_called():
 def test_requests_carry_free_fallbacks():
     client = FakeClient("Yes")
     llm.is_unwell(client, "x", model=llm.FREE_MODELS[0])
-    assert client.calls[0]["extra_body"] == {"models": llm.FREE_MODELS}
+    assert client.calls[0]["extra_body"]["models"] == llm.FREE_MODELS
 
 
 def test_answered_question_sends_question_and_answer():
@@ -90,3 +90,9 @@ def test_friendly_errors_hide_raw_payloads():
 
     assert "slow" in llm.friendly_error(openai.APITimeoutError(request=None))
     assert llm.friendly_error(RuntimeError('{"routing_funnel": ...}')).startswith("Something")
+
+
+def test_calls_turn_reasoning_off():
+    client = FakeClient("Yes")
+    llm.is_unwell(client, "x")
+    assert client.calls[0]["extra_body"]["reasoning"] == {"enabled": False}
