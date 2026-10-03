@@ -1,3 +1,5 @@
+import pytest
+
 import llm
 from conftest import FakeClient
 
@@ -7,13 +9,16 @@ def test_is_unwell_parses_yes_and_no():
     assert llm.is_unwell(FakeClient("No."), "I feel great") is False
 
 
-def test_sampling_params_only_for_non_reasoning_models():
+def test_is_unwell_tolerates_markdown():
+    assert llm.is_unwell(FakeClient("**Yes**"), "x") is True
+
+
+def test_only_free_models_are_called():
     client = FakeClient("Yes")
-    llm.is_unwell(client, "x", model="gpt-4o-mini")
-    llm.is_unwell(client, "x", model="gpt-5-mini")
-    assert client.calls[0]["temperature"] == 0
-    assert "temperature" not in client.calls[1]
-    assert "max_completion_tokens" not in client.calls[1]
+    llm.is_unwell(client, "x", model="google/gemma-4-31b-it:free")
+    with pytest.raises(ValueError, match="not a free model"):
+        llm.is_unwell(client, "x", model="openai/gpt-4o-mini")
+    assert [c["model"] for c in client.calls] == ["google/gemma-4-31b-it:free"]
 
 
 def test_answered_question_sends_question_and_answer():
@@ -37,6 +42,13 @@ def test_extract_symptoms_parses_json():
         {"symptom": "Cough", "when": "Unknown"},
     ]
     assert client.calls[0]["response_format"] == {"type": "json_object"}
+
+
+def test_extract_symptoms_strips_code_fence():
+    client = FakeClient(
+        'Sure!\n```json\n{"symptoms": [{"symptom": "Cough", "when": "Today"}]}\n```'
+    )
+    assert llm.extract_symptoms(client, "cough") == [{"symptom": "Cough", "when": "Today"}]
 
 
 def test_extract_symptoms_tolerates_bad_json():

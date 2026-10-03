@@ -1,25 +1,27 @@
-"""The four assistant decisions, each one Chat Completions call."""
+"""The four assistant decisions, each one Chat Completions call (via OpenRouter)."""
 
 import json
 
 from openai import OpenAI
 
 import prompts
-from config import DEFAULT_MODEL, is_reasoning
+from config import DEFAULT_MODEL, is_free
 
 
 def _ask(client: OpenAI, system: str, user: str, model: str, **kwargs) -> str:
+    if not is_free(model):
+        raise ValueError(f"{model!r} is not a free model; use 'openrouter/free' or a ':free' id")
     response = client.chat.completions.create(
         model=model,
         messages=[{"role": "system", "content": system}, {"role": "user", "content": user}],
-        **({} if is_reasoning(model) else {"temperature": 0}),
+        temperature=0,
         **kwargs,
     )
     return (response.choices[0].message.content or "").strip()
 
 
 def _is_yes(text: str) -> bool:
-    return text.lower().startswith("yes")
+    return text.strip(" *_`\"'").lower().startswith("yes")
 
 
 def is_unwell(client: OpenAI, text: str, model: str = DEFAULT_MODEL) -> bool:
@@ -49,8 +51,9 @@ def extract_symptoms(client: OpenAI, text: str, model: str = DEFAULT_MODEL) -> l
         model,
         response_format={"type": "json_object"},
     )
+    # Free models sometimes wrap the JSON in prose or a ```json fence.
     try:
-        items = json.loads(raw).get("symptoms", [])
+        items = json.loads(raw[raw.find("{") : raw.rfind("}") + 1]).get("symptoms", [])
     except (json.JSONDecodeError, AttributeError):
         return []
     return [

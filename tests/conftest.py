@@ -27,5 +27,4 @@ class FakeClient:
 def isolated(tmp_path, monkeypatch):
     """Every test gets its own DB and a fake key; nothing touches the real config or network."""
     monkeypatch.setattr(config, "DB_PATH", tmp_path / "results.db")
-    monkeypatch.setattr(config, "LEGACY_CONFIG_PATH", tmp_path / "missing.yml")
-    monkeypatch.setenv("OPENAI_API_KEY", "test-key")
+    monkeypatch.setenv("OPENROUTER_API_KEY", "test-key")

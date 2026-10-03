@@ -10,18 +10,28 @@ ROOT = Path(__file__).resolve().parents[1]
 ASSETS_DIR = ROOT / "assets"
 DATASETS_DIR = ROOT / "datasets"
 DB_PATH = ROOT / "db" / "results.db"
-LEGACY_CONFIG_PATH = ROOT / "gpt3_config.yml"
 
 load_dotenv(ROOT / ".env")
 
-DEFAULT_MODEL = os.getenv("OPENAI_MODEL", "gpt-4o-mini")
-REASONING_PREFIXES = ("o1", "o3", "o4", "gpt-5")
-MODELS = list(dict.fromkeys([DEFAULT_MODEL, "gpt-4o-mini", "gpt-4o", "gpt-4.1-mini", "gpt-4.1"]))
+OPENROUTER_BASE_URL = "https://openrouter.ai/api/v1"
+# Free models only. "openrouter/free" routes to whichever free model is available, so it keeps
+# working as individual free models come and go; the others are pinned alternatives.
+FREE_ROUTER = "openrouter/free"
+DEFAULT_MODEL = os.getenv("OPENROUTER_MODEL", FREE_ROUTER)
+MODELS = list(
+    dict.fromkeys(
+        [
+            DEFAULT_MODEL,
+            FREE_ROUTER,
+            "google/gemma-4-31b-it:free",
+            "nvidia/nemotron-3-super-120b-a12b:free",
+        ]
+    )
+)
 
 
-def is_reasoning(model: str) -> bool:
-    """Reasoning models reject sampling params (temperature, top_p, penalties)."""
-    return model.startswith(REASONING_PREFIXES)
+def is_free(model: str) -> bool:
+    return model == FREE_ROUTER or model.endswith(":free")
 
 
 def dataset_files() -> dict[str, Path]:
@@ -36,13 +46,5 @@ def load_dataset(path: Path) -> dict:
 
 
 def api_key(session_key: str | None = None) -> str | None:
-    """Key from the sidebar, then OPENAI_API_KEY / .env, then gpt3_config.yml."""
-    if session_key:
-        return session_key
-    if key := os.getenv("OPENAI_API_KEY"):
-        return key
-    if LEGACY_CONFIG_PATH.exists():
-        with open(LEGACY_CONFIG_PATH, encoding="utf-8") as fh:
-            data = yaml.safe_load(fh)
-        return data.get("GPT3_API") if isinstance(data, dict) else None
-    return None
+    """Key from the sidebar, then OPENROUTER_API_KEY (environment or .env)."""
+    return session_key or os.getenv("OPENROUTER_API_KEY") or None

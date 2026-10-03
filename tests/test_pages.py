@@ -33,7 +33,7 @@ def test_checkin_greets(checkin):
 
 
 def test_checkin_needs_api_key(checkin, monkeypatch):
-    monkeypatch.delenv("OPENAI_API_KEY")
+    monkeypatch.delenv("OPENROUTER_API_KEY")
     at = checkin()
     assert at.warning and not at.chat_input
 
@@ -79,7 +79,7 @@ def test_checkin_shows_api_errors(checkin):
 
 
 def test_experimentation_submits_and_saves(monkeypatch):
-    monkeypatch.setattr(sidebar, "OpenAI", lambda api_key: FakeClient("Hello"))
+    monkeypatch.setattr(sidebar, "OpenAI", lambda **kwargs: FakeClient("Hello"))
     at = AppTest.from_file(str(APP / "pages" / "1_Experimentation.py"), default_timeout=30).run()
     assert not at.exception
     at.text_area[0].set_value("नमस्ते").run()
@@ -91,7 +91,7 @@ def test_experimentation_submits_and_saves(monkeypatch):
 
 
 def test_api_key_survives_page_switch(monkeypatch):
-    monkeypatch.delenv("OPENAI_API_KEY")
+    monkeypatch.delenv("OPENROUTER_API_KEY")
     at = AppTest.from_file(str(APP / "Home.py"), default_timeout=30).run()
     at.sidebar.text_input[0].input("sk-typed").run()
     assert at.session_state.api_key == "sk-typed" and at.chat_input

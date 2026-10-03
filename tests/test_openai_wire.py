@@ -1,4 +1,4 @@
-"""Run llm.py through the real OpenAI SDK against a local fake server (no key, no network).
+"""Run llm.py through the real OpenAI SDK (as used for OpenRouter) against a local fake server.
 
 The other tests replace the client entirely; this one checks the actual request the SDK
 sends and that we parse a real Chat Completions response.
@@ -11,6 +11,7 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 import pytest
 from openai import OpenAI
 
+import config
 import llm
 
 
@@ -75,6 +76,6 @@ def test_full_checkin_over_the_wire(server):
 
     assert [r["path"] for r in requests] == ["/v1/chat/completions"] * 4
     assert all(r["auth"] == "Bearer test-key" for r in requests)
-    assert requests[0]["model"] == "gpt-4o-mini" and requests[0]["temperature"] == 0
+    assert requests[0]["model"] == config.DEFAULT_MODEL and requests[0]["temperature"] == 0
     assert requests[0]["messages"][1] == {"role": "user", "content": "I have a dry cough"}
     assert requests[3]["response_format"] == {"type": "json_object"}

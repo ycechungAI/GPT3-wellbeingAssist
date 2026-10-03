@@ -101,16 +101,18 @@ Decisions:
 - D1. **Tooling:** `uv` with a standard PEP 621 `pyproject.toml`, on Python ≥ 3.12. Running
   `uv sync` installs everything, and `./run.sh` starts the app. This replaces Poetry, its
   broken build backend, and `scripts.py`.
-- D2. **Dependencies:** `streamlit`, `openai`, `python-dotenv`, and `pyyaml`. For dev:
-  `pytest` and `ruff`. Everything else is removed (B2).
-- D3. **OpenAI:** use the current `OpenAI()` client and the Chat Completions API. The
-  default model is `gpt-4o-mini`; set `OPENAI_MODEL` to override it. Prompts keep the
-  original few-shot examples. Symptom extraction uses JSON mode and returns
-  `list[{"symptom", "when"}]`. Reasoning models (`o1`/`o3`/`o4`/`gpt-5*`) are sent no
-  sampling parameters, because those models reject them. This fixes B8–B11.
-- D4. **API key:** looked up in this order: the key entered in the sidebar (session only),
-  then the `OPENAI_API_KEY` env var or `.env` file, then `gpt3_config.yml` (`GPT3_API:`).
-  One helper does this for every page.
+- D2. **Dependencies:** `streamlit`, `openai` (used as the OpenRouter client),
+  `python-dotenv`, and `pyyaml`. For dev: `pytest` and `ruff`. Everything else is removed (B2).
+- D3. **Model API: OpenRouter, free models only.** Calls go through the `openai` SDK pointed
+  at `https://openrouter.ai/api/v1`, using Chat Completions. The default model is
+  `openrouter/free`, a router over whichever free models are live, so the app survives
+  individual free models being withdrawn. `OPENROUTER_MODEL` can pin a `:free` id. Any model
+  that is not `openrouter/free` or `*:free` is refused before a request is sent. OpenRouter
+  ignores unsupported parameters, so no per-model parameter handling is needed. Prompts keep
+  the original few-shot examples. Symptom extraction requests JSON mode and tolerates
+  prose or code fences around the JSON. It returns `list[{"symptom", "when"}]` (B8–B11).
+- D4. **API key:** the key entered in the sidebar (kept for the session), then
+  `OPENROUTER_API_KEY` from the environment or `.env` (template: `.env.example`).
 - D5. **State:** conversation state lives in `st.session_state`. Nothing is written to disk
   for the chat. The page uses `st.chat_message` and `st.chat_input`, and a "New check-in"
   button resets it (B5–B7).
@@ -126,13 +128,11 @@ Decisions:
   timestamps use SQLite's `CURRENT_TIMESTAMP`. The DB file path is `db/results.db`, and the
   file is gitignored. Alembic and SQLAlchemy are removed because one table does not need a
   migration framework (B15).
-- D8. **Experimentation page:** pick a dataset (or upload YAML) and a model, set
-  temperature, top_p, max_tokens, n, and the presence/frequency penalties, then enter a
-  prompt. The dataset examples go in as few-shot context. Submit, view the outputs and
-  latency, and save to the DB. Completion-only params (`best_of`, `logprobs`, `echo`) are
-  dropped.
-- D9. **Results page:** a table of saved runs that you can filter by experiment, plus a CSV
-  download.
+- D8. **Experimentation page:** pick a dataset (or upload YAML) and a free model, set
+  max_tokens, temperature and top_p, then enter a prompt. The dataset examples go in as
+  few-shot context. Submit, view the outputs and latency, and save to the DB.
+- D9. **Results page:** a table of saved runs that you can filter by experiment. CSV download
+  comes from the table's own toolbar.
 - D10. **Tests:** cover `llm.py` with a fake client; cover `db.py` against a temp DB; and
   run all three pages through `streamlit.testing.v1.AppTest` with `llm` monkeypatched.
   Tests do not need a network connection or an API key.
@@ -157,5 +157,6 @@ Decisions:
 - `uv run ruff check` is clean.
 - `./run.sh` serves the app from any working directory. All three pages load without
   exceptions.
-- With a valid key, the check-in flow completes end to end and shows a symptom table.
+- With a valid OpenRouter key, the check-in flow completes end to end on a free model and
+  shows a symptom table.
 - `git status` stays clean after you use the app (no runtime files are tracked).

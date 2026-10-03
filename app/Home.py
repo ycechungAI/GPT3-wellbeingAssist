@@ -4,7 +4,7 @@ import streamlit as st
 
 import config
 import llm
-from sidebar import openai_client
+from sidebar import llm_client
 
 GREETING = "Hello! How is your wellbeing today?"
 FAREWELL = "I am happy to hear that. Let's check in again soon!"
@@ -52,7 +52,7 @@ st.image(str(config.ASSETS_DIR / "ai-bot.jpg"), width=160)
 if "stage" not in st.session_state:
     reset()
 st.sidebar.button("New check-in", on_click=reset)
-client = openai_client()
+client = llm_client()
 
 for message in st.session_state.messages:
     st.chat_message(message["role"]).write(message["content"])

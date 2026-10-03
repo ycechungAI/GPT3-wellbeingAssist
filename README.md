@@ -27,13 +27,14 @@ Open issue: the legal aspects of handling patient data.
    uv sync
    ```
 
-3. Provide an OpenAI API key, using one of these options:
-   - Put `OPENAI_API_KEY=sk-...` in a `.env` file in the repo root.
-   - Set the `OPENAI_API_KEY` environment variable.
-   - Put `GPT3_API: sk-...` in `gpt3_config.yml`.
-   - Paste the key into the sidebar of the running app.
+3. Add an [OpenRouter API key](https://openrouter.ai/keys) to `.env` in the repo root
+   (`cp .env.example .env`, then fill in `OPENROUTER_API_KEY=`), or paste it into the app's
+   sidebar. `.env` is gitignored.
 
-   The default model is `gpt-4o-mini`. To use a different one, set `OPENAI_MODEL`.
+   The app uses **free models only**, so no credits are spent. The default model is
+   `openrouter/free`, which routes to whichever free model is currently available. To pin a
+   specific free model, set `OPENROUTER_MODEL` to its `:free` id. Free models have rate limits;
+   if one is hit, the chat shows the error.
 
 4. Run the app, then open http://localhost:8501:
 
@@ -68,7 +69,7 @@ uv run ruff check .
 uv run ruff format .
 ```
 
-The tests mock OpenAI, so they need no API key or network connection. For the change log of
+The tests mock the model API, so they need no API key or network connection. For the change log of
 the 2026 modernization, see [docs/SPEC.md](docs/SPEC.md).
 
 If you use this project, please follow and star it.
