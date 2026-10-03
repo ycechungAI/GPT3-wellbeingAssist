@@ -71,7 +71,9 @@ if st.button("Submit", type="primary", disabled=not (client and prompt.strip()))
         try:
             response = client.with_options(
                 timeout=EXPERIMENT_TIMEOUT_SECONDS
-            ).chat.completions.create(model=model, messages=messages, **params)
+            ).chat.completions.create(
+                model=model, messages=messages, extra_body=config.NO_REASONING, **params
+            )
         except Exception as err:
             log.exception("experiment request failed")
             st.error(
@@ -80,7 +82,12 @@ if st.button("Submit", type="primary", disabled=not (client and prompt.strip()))
             st.stop()
         elapsed = round(perf_counter() - start, 3)
 
-    outputs = [choice.message.content or "" for choice in response.choices]
+    outputs = [(choice.message.content or "").strip() for choice in response.choices]
+    if not any(outputs):
+        length = response.choices[0].finish_reason == "length"
+        hint = "token limit reached; raise max tokens" if length else "no text"
+        st.warning(f"Empty answer: {hint}. Not saved.")
+        st.stop()
     for output in outputs:
         st.success(output)
     st.caption(f"Took {elapsed} s")
