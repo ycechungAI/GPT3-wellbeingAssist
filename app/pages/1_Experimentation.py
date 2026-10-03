@@ -1,5 +1,6 @@
 """Try a few-shot dataset against a model and save the run."""
 
+import logging
 from time import perf_counter
 
 import streamlit as st
@@ -9,6 +10,9 @@ import config
 import db
 import llm
 from sidebar import llm_client
+
+log = logging.getLogger(__name__)
+EXPERIMENT_TIMEOUT_SECONDS = 300  # long generations are expected here, unlike the chat
 
 st.set_page_config(page_title="Experimentation")
 st.title("Experimentation")
@@ -65,9 +69,14 @@ if st.button("Submit", type="primary", disabled=not (client and prompt.strip()))
     with st.spinner("Requesting completion..."):
         start = perf_counter()
         try:
-            response = client.chat.completions.create(model=model, messages=messages, **params)
+            response = client.with_options(
+                timeout=EXPERIMENT_TIMEOUT_SECONDS
+            ).chat.completions.create(model=model, messages=messages, **params)
         except Exception as err:
-            st.error(f"Request failed: {llm.friendly_error(err)}")
+            log.exception("experiment request failed")
+            st.error(
+                f"Request failed: {llm.friendly_error(err)} ({type(err).__name__}: see server log)"
+            )
             st.stop()
         elapsed = round(perf_counter() - start, 3)
 

@@ -14,6 +14,9 @@ class FakeClient:
         self.calls: list[dict] = []
         self.chat = SimpleNamespace(completions=SimpleNamespace(create=self._create))
 
+    def with_options(self, **kwargs):
+        return self
+
     def _create(self, **kwargs):
         self.calls.append(kwargs)
         reply = self.replies.pop(0) if len(self.replies) > 1 else self.replies[0]

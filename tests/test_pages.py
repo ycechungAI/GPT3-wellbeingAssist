@@ -120,3 +120,19 @@ def test_results_page_lists_runs():
     at = AppTest.from_file(str(APP / "pages" / "2_Results.py"), default_timeout=30).run()
     assert not at.exception
     assert at.dataframe[0].value["result_id"].tolist() == ["r1"]
+
+
+def test_experimentation_shows_friendly_error(monkeypatch):
+    def boom(**kwargs):
+        raise RuntimeError('{"routing_funnel": "raw payload"}')
+
+    fake = FakeClient()
+    fake.chat.completions.create = boom
+    monkeypatch.setattr(sidebar, "OpenAI", lambda **kwargs: fake)
+    at = AppTest.from_file(str(APP / "pages" / "1_Experimentation.py"), default_timeout=30).run()
+    at.text_area[0].set_value("hello").run()
+    at.button[0].click().run()
+    assert not at.exception
+    assert "Something went wrong" in at.error[0].value
+    assert "routing_funnel" not in at.error[0].value
+    assert db.load_results() == []
