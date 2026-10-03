@@ -21,7 +21,7 @@ class FakeClient:
         self.calls.append(kwargs)
         reply = self.replies.pop(0) if len(self.replies) > 1 else self.replies[0]
         choices = [
-            SimpleNamespace(message=SimpleNamespace(content=reply))
+            SimpleNamespace(message=SimpleNamespace(content=reply), finish_reason="stop")
             for _ in range(kwargs.get("n", 1))
         ]
         return SimpleNamespace(id=f"resp-{len(self.calls)}", choices=choices)
