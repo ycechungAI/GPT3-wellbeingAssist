@@ -1,11 +1,14 @@
 """Patient check-in: ask how they feel, follow up on symptoms, structure the answer."""
 
+import logging
+
 import streamlit as st
 
 import config
 import llm
 from sidebar import llm_client
 
+log = logging.getLogger(__name__)
 GREETING = "Hello! How is your wellbeing today?"
 FAREWELL = "I am happy to hear that. Let's check in again soon!"
 THANKS = "Thank you. Here is a summary of what you told me:"
@@ -68,5 +71,6 @@ elif client and (text := st.chat_input("Send Robo a message")):
         with st.spinner("Thinking..."):
             handle(client, text)
     except Exception as err:  # surface API/network errors in the chat, don't crash
-        say(f"Sorry, something went wrong talking to the model: {err}")
+        log.exception("model call failed")
+        say(f"Sorry: {llm.friendly_error(err)}")
     st.rerun()

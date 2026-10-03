@@ -1,6 +1,7 @@
 from types import SimpleNamespace
 
 import pytest
+import streamlit as st
 
 import config
 
@@ -12,6 +13,9 @@ class FakeClient:
         self.replies = list(replies) or ["ok"]
         self.calls: list[dict] = []
         self.chat = SimpleNamespace(completions=SimpleNamespace(create=self._create))
+
+    def with_options(self, **kwargs):
+        return self
 
     def _create(self, **kwargs):
         self.calls.append(kwargs)
@@ -28,3 +32,4 @@ def isolated(tmp_path, monkeypatch):
     """Every test gets its own DB and a fake key; nothing touches the real config or network."""
     monkeypatch.setattr(config, "DB_PATH", tmp_path / "results.db")
     monkeypatch.setenv("OPENROUTER_API_KEY", "test-key")
+    st.cache_resource.clear()

@@ -23,4 +23,14 @@ def llm_client() -> OpenAI | None:
     if not key:
         st.warning("Add an OpenRouter API key in the sidebar to continue (free models only).")
         return None
-    return OpenAI(api_key=key, base_url=config.OPENROUTER_BASE_URL)
+    return _client(key)
+
+
+@st.cache_resource
+def _client(key: str) -> OpenAI:
+    return OpenAI(
+        api_key=key,
+        base_url=config.OPENROUTER_BASE_URL,
+        timeout=config.TIMEOUT_SECONDS,
+        max_retries=0,
+    )
