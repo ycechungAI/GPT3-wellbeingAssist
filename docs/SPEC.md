@@ -13,16 +13,18 @@ All of this should run with one command on a current Python, without any manual 
 
 ## 2. Branch audit
 
-| Branch | State relative to `working1` | Action |
+| Branch | What it was | Outcome |
 |---|---|---|
-| `working1` (default) | — | Fix here (this spec) |
-| `main` | Fully merged into `working1` (ancestor) | Fast-forward to the fixed `working1` |
-| `experiment1` | Fully merged into `working1` (ancestor) | Fast-forward, or delete as stale |
-| `temp` | Fully merged into `working1` (ancestor) | Fast-forward, or delete as stale |
-| `fix/dependabot-errors` | Merged as PR #11 | Delete (stale) |
-| `dependabot/pip/pip-c4ff2e68b4` (PR #13) | Bumps `filelock` in `poetry.lock` only | Close: `poetry.lock` is replaced by `uv.lock` |
+| `working1` (default) | The current app | Fixed here (this spec) |
+| `main` | The first prototype of the same app (flat layout) | Archived as tag `archive/main`, branch deleted |
+| `experiment1` | The same app after the move to `app/`, with old GPT-3 models | Archived as tag `archive/experiment1`, branch deleted |
+| `temp` | `experiment1` plus dependency bumps | Archived as tag `archive/temp`, branch deleted |
+| `fix/dependabot-errors` | Merged as PR #11 | Stale |
+| `dependabot/pip/pip-c4ff2e68b4` (PR #13) | `filelock` bump in `poetry.lock` | Closed by PR #14 (`poetry.lock` replaced by `uv.lock`) |
 
-No other branch contains unique code, so no bugs need fixing anywhere except `working1`.
+The archived branches held older snapshots of the same check-in app, each with the bugs below.
+They were not fixed separately; `working1` is the one maintained app. To look at one, run
+`git checkout archive/main` (or `archive/temp`, `archive/experiment1`).
 
 ## 3. What is broken on `working1`
 
@@ -149,7 +151,7 @@ Decisions:
 4. Pages: `ui.py` → `Home.py`, `1_Experimentation.py`, `2_Results.py` (B5–B7, B12, B13).
 5. Tests; remove GitHub Actions workflows (B18).
 6. README (B19).
-7. Other branches: fast-forward `main`, `temp`, and `experiment1`, and close PR #13 (§2).
+7. Other branches: archive `main`, `temp`, and `experiment1` as tags, and close PR #13 (§2).
 
 ## 6. Acceptance criteria
 
