@@ -46,7 +46,7 @@ Open issue: the legal aspects of handling patient data.
 - **Home:** the patient check-in chat.
 - **Experimentation:** try a few-shot dataset against a model, adjust the sampling
   parameters, and save each run to `db/results.db`.
-- **Results:** browse saved runs and download them as CSV.
+- **Results:** browse saved runs; download them as CSV from the table toolbar.
 
 ## Adding datasets
 

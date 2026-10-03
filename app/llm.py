@@ -5,14 +5,14 @@ import json
 from openai import OpenAI
 
 import prompts
-from config import DEFAULT_MODEL
+from config import DEFAULT_MODEL, is_reasoning
 
 
 def _ask(client: OpenAI, system: str, user: str, model: str, **kwargs) -> str:
     response = client.chat.completions.create(
         model=model,
         messages=[{"role": "system", "content": system}, {"role": "user", "content": user}],
-        temperature=0,
+        **({} if is_reasoning(model) else {"temperature": 0}),
         **kwargs,
     )
     return (response.choices[0].message.content or "").strip()
@@ -24,7 +24,7 @@ def _is_yes(text: str) -> bool:
 
 def is_unwell(client: OpenAI, text: str, model: str = DEFAULT_MODEL) -> bool:
     """Is the patient feeling unwell?"""
-    return _is_yes(_ask(client, prompts.IS_UNWELL, text, model, max_completion_tokens=5))
+    return _is_yes(_ask(client, prompts.IS_UNWELL, text, model))
 
 
 def answered_question(
@@ -32,12 +32,12 @@ def answered_question(
 ) -> bool:
     """Did the patient's answer respond to the question?"""
     user = f"Q: {question} A: {answer}"
-    return _is_yes(_ask(client, prompts.ANSWERED_QUESTION, user, model, max_completion_tokens=5))
+    return _is_yes(_ask(client, prompts.ANSWERED_QUESTION, user, model))
 
 
 def next_question(client: OpenAI, text: str, model: str = DEFAULT_MODEL) -> str:
     """Which follow-up question should we ask about these symptoms?"""
-    return _ask(client, prompts.NEXT_QUESTION, text, model, max_completion_tokens=100)
+    return _ask(client, prompts.NEXT_QUESTION, text, model)
 
 
 def extract_symptoms(client: OpenAI, text: str, model: str = DEFAULT_MODEL) -> list[dict]:
@@ -47,7 +47,6 @@ def extract_symptoms(client: OpenAI, text: str, model: str = DEFAULT_MODEL) -> l
         prompts.EXTRACT_SYMPTOMS,
         text,
         model,
-        max_completion_tokens=400,
         response_format={"type": "json_object"},
     )
     try:

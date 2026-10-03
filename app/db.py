@@ -61,6 +61,9 @@ def save_result(
 
 
 def load_results(path: Path | None = None) -> list[dict]:
+    path = path or config.DB_PATH
+    if not path.exists():
+        return []
     with closing(connect(path)) as conn:
         rows = conn.execute("SELECT * FROM gpt3_results ORDER BY created_at DESC").fetchall()
     return [dict(r) for r in rows]

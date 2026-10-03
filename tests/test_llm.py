@@ -7,6 +7,15 @@ def test_is_unwell_parses_yes_and_no():
     assert llm.is_unwell(FakeClient("No."), "I feel great") is False
 
 
+def test_sampling_params_only_for_non_reasoning_models():
+    client = FakeClient("Yes")
+    llm.is_unwell(client, "x", model="gpt-4o-mini")
+    llm.is_unwell(client, "x", model="gpt-5-mini")
+    assert client.calls[0]["temperature"] == 0
+    assert "temperature" not in client.calls[1]
+    assert "max_completion_tokens" not in client.calls[1]
+
+
 def test_answered_question_sends_question_and_answer():
     client = FakeClient("Yes")
     assert llm.answered_question(client, "Do you have a fever?", "Yes, 39C") is True

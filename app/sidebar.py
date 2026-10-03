@@ -8,12 +8,16 @@ import config
 
 def openai_client() -> OpenAI | None:
     """Show the API-key box and return a client, or None (with a warning) if no key is set."""
-    # Widget values are dropped when switching pages, so keep the key in plain session state.
-    st.session_state.api_key = st.sidebar.text_input(
+    # Widget values are dropped when switching pages, so keep the key in plain session state
+    # and restore the (keyed, stable) widget from it on every page.
+    st.session_state.setdefault("api_key", "")
+    st.session_state.api_key_input = st.session_state.api_key
+    st.sidebar.text_input(
         "OpenAI API key",
-        value=st.session_state.get("api_key", ""),
+        key="api_key_input",
         type="password",
         help="Optional if OPENAI_API_KEY is set in your environment, .env or gpt3_config.yml.",
+        on_change=lambda: st.session_state.update(api_key=st.session_state.api_key_input),
     )
     key = config.api_key(st.session_state.api_key)
     if not key:

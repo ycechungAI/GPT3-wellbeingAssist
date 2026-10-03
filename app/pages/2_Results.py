@@ -1,8 +1,5 @@
 """Browse saved experiment runs."""
 
-import csv
-import io
-
 import streamlit as st
 
 import db
@@ -20,9 +17,4 @@ selected = st.multiselect("Experiments", names, default=names)
 rows = [r for r in rows if r["experiment_name"] in selected]
 
 st.dataframe(rows, hide_index=True)
-
-buffer = io.StringIO()
-writer = csv.DictWriter(buffer, fieldnames=list(rows[0]) if rows else [])
-writer.writeheader()
-writer.writerows(rows)
-st.download_button("Download CSV", buffer.getvalue(), "results.csv", "text/csv")
+st.caption("Use the table's toolbar to download it as CSV.")

@@ -15,13 +15,18 @@ client = openai_client()
 
 model = st.sidebar.selectbox("Model", config.MODELS)
 params = {
-    "temperature": st.sidebar.slider("Temperature", 0.0, 2.0, 0.7, 0.05),
-    "top_p": st.sidebar.slider("Top P", 0.0, 1.0, 1.0, 0.05),
-    "max_completion_tokens": st.sidebar.number_input("Max tokens", 1, 4096, 256),
+    "max_completion_tokens": st.sidebar.number_input("Max tokens", 1, 32768, 1024),
     "n": st.sidebar.number_input("Completions (n)", 1, 10, 1),
-    "presence_penalty": st.sidebar.slider("Presence penalty", -2.0, 2.0, 0.0, 0.1),
-    "frequency_penalty": st.sidebar.slider("Frequency penalty", -2.0, 2.0, 0.0, 0.1),
 }
+if config.is_reasoning(model):
+    st.sidebar.caption("Reasoning models don't accept sampling parameters.")
+else:
+    params |= {
+        "temperature": st.sidebar.slider("Temperature", 0.0, 2.0, 0.7, 0.05),
+        "top_p": st.sidebar.slider("Top P", 0.0, 1.0, 1.0, 0.05),
+        "presence_penalty": st.sidebar.slider("Presence penalty", -2.0, 2.0, 0.0, 0.1),
+        "frequency_penalty": st.sidebar.slider("Frequency penalty", -2.0, 2.0, 0.0, 0.1),
+    }
 
 experiment_name = st.text_input("Experiment name", value="default-exp")
 
@@ -32,7 +37,14 @@ if source == "Examples" and datasets:
     dataset = config.load_dataset(datasets[st.selectbox("Example dataset", list(datasets))])
 elif source == "Upload own":
     if uploaded := st.file_uploader("Upload dataset", type=["yaml", "yml"]):
-        dataset = yaml.safe_load(uploaded)
+        try:
+            dataset = yaml.safe_load(uploaded)
+        except yaml.YAMLError as err:
+            st.error(f"Could not parse that YAML file: {err}")
+            st.stop()
+        if not isinstance(dataset, dict) or not isinstance(dataset.get("dataset"), dict):
+            st.error("The file needs a top-level mapping with a `dataset:` map of examples.")
+            st.stop()
 
 if not dataset:
     st.info("Pick an example dataset or upload a YAML file (see datasets/ for the format).")

@@ -106,7 +106,8 @@ Decisions:
 - D3. **OpenAI:** use the current `OpenAI()` client and the Chat Completions API. The
   default model is `gpt-4o-mini`; set `OPENAI_MODEL` to override it. Prompts keep the
   original few-shot examples. Symptom extraction uses JSON mode and returns
-  `list[{"symptom", "when"}]`. This fixes B8–B11.
+  `list[{"symptom", "when"}]`. Reasoning models (`o1`/`o3`/`o4`/`gpt-5*`) are sent no
+  sampling parameters, because those models reject them. This fixes B8–B11.
 - D4. **API key:** looked up in this order: the key entered in the sidebar (session only),
   then the `OPENAI_API_KEY` env var or `.env` file, then `gpt3_config.yml` (`GPT3_API:`).
   One helper does this for every page.
@@ -118,7 +119,7 @@ Decisions:
   2. Patient answers. `is_unwell(text)` returns no → the bot ends the check-in warmly
      (`done`). Returns yes → the bot calls `next_question(text)` (`follow_up`).
   3. Patient answers. `answered_question(question, answer)` returns no → the bot repeats
-     the question. Returns yes → `extract_symptoms(answer)` produces a table → `done`.
+     the question. Returns yes → `extract_symptoms(first message + answer)` produces a table → `done`.
   4. API errors appear as an error in the chat and never crash the page or fail silently.
 - D7. **DB:** a single `sqlite3` table, `gpt3_results`, created with
   `CREATE TABLE IF NOT EXISTS` on first use. Its columns match the old migration, and
@@ -135,9 +136,9 @@ Decisions:
 - D10. **Tests:** cover `llm.py` with a fake client; cover `db.py` against a temp DB; and
   run all three pages through `streamlit.testing.v1.AppTest` with `llm` monkeypatched.
   Tests do not need a network connection or an API key.
-- D11. **CI:** one `ci.yml` workflow that runs `uv sync`, then `ruff check`, then `pytest`
-  on each push and PR. Bump the dependency-review action versions. Add a `dependabot.yml`
-  entry for `uv` and GitHub Actions.
+- D11. **No GitHub CI:** checks run locally (`uv run ruff check . && uv run pytest`), and
+  reviews are done by hand, not by a bot. The Actions workflows are removed. `dependabot.yml`
+  keeps `uv` dependencies up to date.
 
 ## 5. Work breakdown (in order)
 
@@ -146,7 +147,7 @@ Decisions:
    Poetry, Alembic, and `scripts.py` (B1–B4, B15).
 3. Core: `config.py`, `prompts.py`, `llm.py`, `db.py` (B8–B11, B15).
 4. Pages: `ui.py` → `Home.py`, `1_Experimentation.py`, `2_Results.py` (B5–B7, B12, B13).
-5. Tests and CI (B18).
+5. Tests; remove GitHub Actions workflows (B18).
 6. README (B19).
 7. Other branches: fast-forward `main`, `temp`, and `experiment1`, and close PR #13 (§2).
 

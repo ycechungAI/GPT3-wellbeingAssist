@@ -15,7 +15,13 @@ LEGACY_CONFIG_PATH = ROOT / "gpt3_config.yml"
 load_dotenv(ROOT / ".env")
 
 DEFAULT_MODEL = os.getenv("OPENAI_MODEL", "gpt-4o-mini")
+REASONING_PREFIXES = ("o1", "o3", "o4", "gpt-5")
 MODELS = list(dict.fromkeys([DEFAULT_MODEL, "gpt-4o-mini", "gpt-4o", "gpt-4.1-mini", "gpt-4.1"]))
+
+
+def is_reasoning(model: str) -> bool:
+    """Reasoning models reject sampling params (temperature, top_p, penalties)."""
+    return model.startswith(REASONING_PREFIXES)
 
 
 def dataset_files() -> dict[str, Path]:
@@ -37,5 +43,6 @@ def api_key(session_key: str | None = None) -> str | None:
         return key
     if LEGACY_CONFIG_PATH.exists():
         with open(LEGACY_CONFIG_PATH, encoding="utf-8") as fh:
-            return (yaml.safe_load(fh) or {}).get("GPT3_API")
+            data = yaml.safe_load(fh)
+        return data.get("GPT3_API") if isinstance(data, dict) else None
     return None

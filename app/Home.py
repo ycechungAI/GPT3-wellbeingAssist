@@ -15,6 +15,7 @@ def reset() -> None:
     st.session_state.stage = "greet"
     st.session_state.messages = [{"role": "assistant", "content": GREETING}]
     st.session_state.question = GREETING
+    st.session_state.complaint = ""
     st.session_state.symptoms = []
 
 
@@ -27,6 +28,7 @@ def handle(client, text: str) -> None:
     state = st.session_state
     if state.stage == "greet":
         if llm.is_unwell(client, text):
+            state.complaint = text
             state.question = llm.next_question(client, text)
             say(state.question)
             state.stage = "follow_up"
@@ -37,7 +39,7 @@ def handle(client, text: str) -> None:
         if not llm.answered_question(client, state.question, text):
             say(f"Sorry, I didn't quite get that. {state.question}")
             return
-        state.symptoms = llm.extract_symptoms(client, text)
+        state.symptoms = llm.extract_symptoms(client, f"{state.complaint}\n{text}")
         say(THANKS if state.symptoms else "Thank you, I have noted that down.")
         state.stage = "done"
 
