@@ -1,188 +1,50 @@
-import os
-import openai
-from dotenv import load_dotenv
-load_dotenv('.env')
-openai.api_key = os.getenv("OPENAI_API_KEY")
+"""System prompts and few-shot examples for the check-in assistant."""
 
-defaultCodePrompt1 = """I am an doctor assistant bot. If you ask me a question which indicates that the patient is sick. I will respond Yes. If you ask me a question that is nonsense, trickery the answer will be No.
-Input: I am feeling well today.
-Output: No
+IS_UNWELL = """You are a doctor's assistant. Decide whether the patient's message indicates \
+that they are unwell (ill, injured, in pain or experiencing symptoms).
+Answer with exactly one word: Yes or No. Nonsense or off-topic messages are No.
 
-Input: I am feeling so so
-Output: No
+Examples:
+I am feeling well today. -> No
+I am feeling so so. -> No
+I have a flu like symptom and feeling under the weather. -> Yes
+I am not feeling well. -> Yes
+I have dizziness and fatigue. -> Yes
+I am scared by the ghosts. -> No
+Today is a great day to take out my dog for a walk. -> No
+Someone hit me on the head. -> Yes
+I am feeling sick. -> Yes"""
 
-Input:I have a flu like symptom and feeling under the weather.
-Output: Yes
+ANSWERED_QUESTION = """You check whether a patient answered the question they were asked.
+You receive the question and the answer. Reply with exactly one word: Yes if the answer \
+responds to the question, No if it is unrelated, nonsense or evasive.
 
-Input. I am not feeling well
-Output: Yes
+Examples:
+Q: How are you today? A: The sun shines bright. -> No
+Q: What was your mother's name? A: Maria. -> Yes
+Q: Can you tell me what the time is? A: My dog is cute. -> No
+Q: Do you have any symptoms that can explain why you feel sick? \
+A: I have a headache and some nausea. -> Yes
+Q: What is hurting you? A: My leg is hurting. It has a cut. -> Yes"""
 
-Input: I have dizzyness and fatigue.
-Output: Yes
+NEXT_QUESTION = """You are a doctor's assistant that follows up on a patient's symptoms.
+Given what the patient said, ask ONE short follow-up question about related symptoms that \
+would help a clinician. Reply with the question only.
 
-Input: I am scared by the ghosts.
-Output: No
+Examples:
+I have a dry cough. -> Do you also have a runny nose, fever or shortness of breath?
+I have a flu like symptom. -> Do you have a high fever or muscle aches?
+I have a stomach ache. -> Do you also have nausea, vomiting or diarrhea?
+I have dizziness and fatigue. -> Do you feel lightheaded, faint or weak?
+My head hurts. -> Where exactly is the headache, and since when have you had it?"""
 
-Input: Today is a great day to take out my dog for the walk.
-Output: No
+EXTRACT_SYMPTOMS = """Extract every symptom the patient mentions and, if stated, when they \
+experienced it. Return JSON of the form:
+{"symptoms": [{"symptom": "Headache", "when": "Sunday"}]}
+Use "Unknown" when no time is given. Use short, capitalised symptom names.
 
-Input: Someone hit me on the head.
-Output: Yes
-
-Input: I am feeling great.
-Output: No
-
-Input: I am feeling well.
-Output: No
-
-Input: I am feeling sick.
-Output: Yes
-
-Input: {}
-Output:"""
-
-defaultCodePrompt2 = """I am an accurate answering bot. I will tell you whether the previous question was answered. I will respond with Yes if the previous question was answered. If the previous question was not answered or the answer  is nonsense, trickery or ambiguous I will respond with No.
-
-Input: How are you today? - The sun shines bright.
-Output: No
-
-Input: What was your Mother's name? - Maria.
-Output: Yes
-
-Input: Can you tell me what the time is? - My dog is cute.
-Output: No
-
-Input: Do you have any symptoms that can explain why you feel sick? - I have a headache and some nausea.
-Output: Yes
-
-Input: How is your wellbeing? -  I feel good, thanks for asking.
-Output: Yes
-
-Input: What is hurting you? - My leg is hurting. It has a cut.
-Output: Yes
-
-Input: {}
-Output:"""
-
-defaultCodePrompt3 = """I am an accurate answering bot that expands on one's symptoms. If you ask me a question I will expand on the correct symptoms of the following. If you ask me a question that is nonsense, trickery answer, I will respond with 'Please respond to my question.'
-
-Input: I have a dry cough.
-Output: Do you have the following symptoms: runny nose? [fever] shortness of breath? [Emphysema]? Other symptoms?
-
-Input: I am feeling so so.
-Output: Do you have any other symptoms?
-
-Input: I have a flu like symptom and feeling under the weather.
-Output: Do you have high fever, or muscle aches? [Influenza] Other symptoms?
-
-Input: I have a stomach ache.
-Output: Do you have the following symptoms: nausea? [vomiting] diarrhea? [appendicitis] Other symptoms?
-
-Input: I have dizziness and fatigue.
-Output: Do you have the following symptoms: lightheadedness? [fainting] weakness? [anemia] Other symptoms?
-
-Input:  My head hurts.
-Output: Do you have the following symptoms: headache? [migraine] Other symptoms?
-
-Input: {}
-Output:"""
-
-defaultCodePrompt4 = """"Given the input from the user create a table summarizing the symptoms from the given text and if possible the date when the person experienced the symptom.
-
-Input: I had a headache on sunday and felt a little sick on monday. That went away quickly. Sometimes I have pain in the kidney and today in the morning i felt a bit sleepy.  On wednesday I hurt my leg. I also hurt my ear when I went diving. This morning I hurt my toe.
-Output:
-| Symptom | Date |
-| Headache | Sunday |
-| Sickness | Monday |
-| Kidney Pain |  Unknown |
-| Sleepy |  Today |
-| Leg Pain | Wednesday |
-| Ear Pain |  Unknown |
-| Toe Pain |  Today |
-
-Input: {}
-Output:"""
-
-
-def patient_feeling_unwell(text):
-
-    kwargs = {
-        "engine": "davinci-codex",
-        "temperature": 0.60,
-        "max_tokens": 10,
-        "best_of": 1,
-        "stop": ["Input:", "\n"]
-    }
-
-    myKwargs = {}
-
-    for kwarg in myKwargs:
-        kwargs[kwarg] = myKwargs[kwarg]
-
-    answer_text = openai.Completion.create(prompt=defaultCodePrompt1.format(text), **kwargs)["choices"][0]["text"].strip()
-
-    print(answer_text)
-
-    if "Yes" in answer_text:
-        return [True, answer_text]
-    elif "No" in answer_text:
-        return [False, answer_text]
-    else:
-        return "Repeat"
-
-
-#Did it fulfill our question? [True, False]
-def patient_answered_question(text):
-    kwargs = {
-        "engine": "davinci-codex",
-        "temperature": 0.60,
-        "max_tokens": 10,
-        "best_of": 1,
-        "stop": ["Input:", "\n"]
-    }
-
-    myKwargs = {}
-
-    answer_text = openai.Completion.create(prompt=defaultCodePrompt2.format(text), **kwargs)["choices"][0]["text"].strip()
-
-
-    for kwarg in myKwargs:
-        kwargs[kwarg] = myKwargs[kwarg]
-
-    if 'Yes' in answer_text:
-        return True
-    elif 'No' in answer_text:
-        return False
-    else:
-        return "Repeat"
-
-#What symptoms do we need to ask more specifically about? [Next Question for Patient]
-def what_to_ask_next(text):
-    kwargs = {
-        "engine": "davinci-codex",
-        "temperature":0,
-        "top_p":1,
-        "max_tokens": 85,
-        "best_of": 1,
-        "stop": ["Input:", "\n"]
-    }
-    myKwargs = {}
-    next_question = openai.Completion.create(prompt=defaultCodePrompt3.format(text), **kwargs)["choices"][0]["text"].strip()
-
-    for kwarg in myKwargs:
-        kwargs[kwarg] = myKwargs[kwarg]
-    return next_question
-
-def extract_symptoms_from_patient_answer(text):
-    kwargs = {
-        "engine": "davinci-codex",
-        "temperature": 0.60,
-        "max_tokens": 100,
-        "best_of": 1,
-        "stop": ["Input:"]
-    }
-    myKwargs = {}
-    for kwarg in myKwargs:
-        kwargs[kwarg] = myKwargs[kwarg]
-    answer = openai.Completion.create(prompt=defaultCodePrompt4.format(text), **kwargs)["choices"][0]["text"]
-    return answer# symptoms, dates
+Example input: I had a headache on sunday and felt a little sick on monday. Sometimes I have \
+pain in the kidney and this morning I felt a bit sleepy.
+Example output: {"symptoms": [{"symptom": "Headache", "when": "Sunday"}, \
+{"symptom": "Sickness", "when": "Monday"}, {"symptom": "Kidney pain", "when": "Unknown"}, \
+{"symptom": "Sleepiness", "when": "Today"}]}"""

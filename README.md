@@ -1,76 +1,78 @@
-## GPT3-wellbeingAssist
+# GPT3-wellbeingAssist
 
-# Main Problems: 
-Gain information about patients health status in between doctor's visits 
-Put it in a structured format
+A check-in assistant for clinical trials. It gathers information about a patient's health
+between doctor's visits and puts it into a structured format, so trials run better and
+patients are looked after.
 
-# Outcome: 
-Improve clinical trials effectiveness and patients well being
+Given the patient's answer, the assistant decides:
 
-Given the patient’s answer….: 
-Did it fulfill our question? [Yes, No]
-Do we need to ask a follow-up question? [Yes, No]
-What do we need to ask more specifically about? 
-What are his symptoms and when did they occur? 
-How can we categorize his answer (structure the data)? 
+- Is the patient unwell?
+- Did they answer the question?
+- What should we ask more specifically about?
+- Which symptoms do they have, and when did those symptoms occur? (structured as a table)
 
-# Open Issues: 
-Legal aspect?
+Open issue: the legal aspects of handling patient data.
 
-## NEW INSTRUCTIONS
+## Quick start
 
-# Setup
+1. Install [uv](https://docs.astral.sh/uv/getting-started/installation/):
 
-- pip install pysqlite3
+   ```bash
+   curl -LsSf https://astral.sh/uv/install.sh | sh
+   ```
 
-- Add your OpenAI key to `gpt3_config.yml` in this format:
+2. Install dependencies (uv fetches Python 3.12+ if needed):
 
-```yaml
-GPT3_API: ab-XXXXXXXXXXXXXXXXXXXXXXXX
+   ```bash
+   uv sync
+   ```
+
+3. Provide an OpenAI API key, using one of these options:
+   - Put `OPENAI_API_KEY=sk-...` in a `.env` file in the repo root.
+   - Set the `OPENAI_API_KEY` environment variable.
+   - Put `GPT3_API: sk-...` in `gpt3_config.yml`.
+   - Paste the key into the sidebar of the running app.
+
+   The default model is `gpt-4o-mini`. To use a different one, set `OPENAI_MODEL`.
+
+4. Run the app, then open http://localhost:8501:
+
+   ```bash
+   ./run.sh
+   ```
+
+## Pages
+
+- **Home:** the patient check-in chat.
+- **Experimentation:** try a few-shot dataset against a model, adjust the sampling
+  parameters, and save each run to `db/results.db`.
+- **Results:** browse saved runs and download them as CSV.
+
+## Adding datasets
+
+Add a `*.yml` or `*.yaml` file to `datasets/`. It then appears in the Experimentation
+dropdown. For the format, see the existing files: `name`, `language`, `nlp_task`, `input`,
+`output`, and a `dataset` map of examples.
+
+## Development
+
+```bash
+uv run pytest
 ```
-- Or you can add it via the `streamlit` app directly.
-- Install `poetry`. Follow the [official site](https://python-poetry.org/docs/#installation) or [this cookbook](https://soumendra.gitbook.io/deeplearning-cookbook/setting-up/setting-up-poetry-for-your-project)
-- Once `poetry` is installed, run `poetry install`. This will download all the packages needed (ideally in `.venv`) as well as setup the repository.
-- To run migrations: `poetry run migrate`
 
-# Running the app
-- To run the `streamlit` app: `poetry run st-server` or bash run.sh
-- You will now be able to view the application @ `localhost:8000`
-
-# Adding new primes/dataset
-- Create a `*.yml` or `*.yaml` file in `datasets`, this file would be available in the `streamlit` app in the dropdown
-
-# Running
-[x] only works on streamlit run home.py when you cd into the app folder
-[ ] getting the script to work by just running bash script run.sh
-
-If you use this project, do help out:
-Follow and Star the project
-
-# Screenshot
-
-<img src="https://i.ibb.co/BCgRdbB/experiment1.png"
-     alt="program running on experimental version"
-     style="float: left; margin-right: 10px;" />
-
+```bash
+uv run ruff check .
 ```
-## ======================================
-## DEPRECIATED
-## ======================================
-# Environment - Conda python3
-conda env create --name envname --file=environment_droplet.yml
-conda activate envname
 
-# Install Openai and Flask 
-pip install openai
-pip install python-dotenv
-pip install Flask
-pip install fpdf
+```bash
+uv run ruff format .
+```
 
-# Deactivate Environment
-conda deactivate
+The tests mock OpenAI, so they need no API key or network connection. For the change log of
+the 2026 modernization, see [docs/SPEC.md](docs/SPEC.md).
 
-# To run Flask
-$ export FLASK_APP=backend_functions.py 
+If you use this project, please follow and star it.
 
-$ flask run
+## Screenshot
+
+<img src="https://i.ibb.co/BCgRdbB/experiment1.png" alt="program running on experimental version" />
