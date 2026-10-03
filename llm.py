@@ -21,6 +21,9 @@ MODEL = os.getenv("OPENROUTER_MODEL", FREE_MODELS[0])
 # Free models can stall. Give each model this long, then move on to the next free model,
 # rather than waiting out the SDK's 10-minute default.
 TIMEOUT_SECONDS = 45
+# OpenRouter's unified switch. Reasoning models can otherwise spend the whole token budget
+# thinking and return an empty answer, and these short answers don't need it.
+NO_REASONING = {"reasoning": {"enabled": False}}
 
 
 def is_free(model: str) -> bool:
@@ -47,7 +50,7 @@ def _ask(client: OpenAI, system: str, user: str, model: str, **kwargs) -> str:
                 messages=[{"role": "system", "content": system}, {"role": "user", "content": user}],
                 temperature=0,
                 # OpenRouter also falls back by itself if a model is unavailable.
-                extra_body={"models": order[i:]},
+                extra_body={"models": order[i:], **NO_REASONING},
                 **kwargs,
             )
         except openai.APITimeoutError:
