@@ -39,20 +39,29 @@ def client(key: str) -> OpenAI:
     return OpenAI(api_key=key, base_url=BASE_URL, timeout=TIMEOUT_SECONDS, max_retries=0)
 
 
+def _create(client: OpenAI, model: str, models: list[str], messages, reasoning_off, **kwargs):
+    return client.chat.completions.create(
+        model=model,
+        messages=messages,
+        temperature=0,
+        # OpenRouter also falls back by itself if a model is unavailable.
+        extra_body={"models": models, **(NO_REASONING if reasoning_off else {})},
+        **kwargs,
+    )
+
+
 def _ask(client: OpenAI, system: str, user: str, model: str, **kwargs) -> str:
     if not is_free(model):
         raise ValueError(f"{model!r} is not a free model; use 'openrouter/free' or a ':free' id")
+    messages = [{"role": "system", "content": system}, {"role": "user", "content": user}]
     order = [model, *(m for m in FREE_MODELS if m != model)]
     for i, current in enumerate(order):
         try:
-            response = client.chat.completions.create(
-                model=current,
-                messages=[{"role": "system", "content": system}, {"role": "user", "content": user}],
-                temperature=0,
-                # OpenRouter also falls back by itself if a model is unavailable.
-                extra_body={"models": order[i:], **NO_REASONING},
-                **kwargs,
-            )
+            try:
+                response = _create(client, current, order[i:], messages, True, **kwargs)
+            except openai.BadRequestError:
+                # Some models can't turn reasoning off; use their default instead.
+                response = _create(client, current, order[i:], messages, False, **kwargs)
         except openai.APITimeoutError:
             if current == order[-1]:
                 raise
