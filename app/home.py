@@ -1,8 +1,10 @@
 """Prompt experiment lab: run a few-shot dataset against free models side by side."""
 
 import logging
+import sqlite3
 from time import perf_counter
 
+import openai
 import streamlit as st
 import yaml
 
@@ -13,6 +15,16 @@ from sidebar import llm_client
 
 log = logging.getLogger(__name__)
 TIMEOUT_SECONDS = 300  # long generations are expected here, unlike the chat
+
+
+def error_text(err: Exception) -> str:
+    """Developer-facing: keep the provider's reason for 4xx errors, which are actionable here."""
+    if isinstance(err, openai.APIStatusError) and not isinstance(err, openai.RateLimitError):
+        body = err.body if isinstance(err.body, dict) else {}
+        reason = body.get("message") or err.message
+        return f"{err.status_code}: {str(reason)[:300]}"
+    return llm.friendly_error(err)
+
 
 st.set_page_config(page_title="Experiment Lab", page_icon=":test_tube:", layout="wide")
 st.title("Prompt Experiment Lab :test_tube:")
@@ -90,27 +102,37 @@ for column, model in zip(st.columns(len(models)), models, strict=True):
                 )
             except Exception as err:
                 log.exception("experiment request failed for %s", model)
-                st.error(f"{llm.friendly_error(err)} ({type(err).__name__}: see server log)")
+                st.error(error_text(err))
                 continue
             elapsed = round(perf_counter() - start, 3)
 
         choice = response.choices[0]
         output = (choice.message.content or "").strip()
         if not output:
-            why = "it hit the token limit" if choice.finish_reason == "length" else "no text"
-            st.warning(f"Empty answer ({why}). Not saved. Try more max tokens or reasoning off.")
+            if choice.finish_reason != "length":
+                hint = "the model returned no text"
+            elif reasoning:
+                hint = "token limit reached while reasoning; raise max tokens or turn reasoning off"
+            else:
+                hint = "token limit reached; raise max tokens"
+            st.warning(f"Empty answer: {hint}. Not saved.")
             continue
         st.success(output)
         st.caption(f"{elapsed} s")
-        db.save_result(
-            result_id=response.id,
-            experiment_name=experiment_name,
-            api_params={"model": model, **params, "reasoning": reasoning, "prompt": prompt},
-            response_time=elapsed,
-            outputs=[output],
-            language=str(dataset.get("language", "")),
-            nlp_task=str(dataset.get("nlp_task", "")),
-        )
+        try:
+            db.save_result(
+                result_id=response.id or f"{model}-{perf_counter()}",
+                experiment_name=experiment_name,
+                api_params={"model": model, **params, "reasoning": reasoning, "prompt": prompt},
+                response_time=elapsed,
+                outputs=[output],
+                language=str(dataset.get("language", "")),
+                nlp_task=str(dataset.get("nlp_task", "")),
+            )
+        except sqlite3.Error as err:
+            log.exception("could not save run for %s", model)
+            st.warning(f"Answer shown but not saved: {err}")
+            continue
         saved += 1
 if saved:
     st.toast(f"Saved {saved} run(s) to the results database")

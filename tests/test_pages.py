@@ -178,5 +178,61 @@ def test_lab_empty_answer_is_not_saved(monkeypatch):
     at.text_area[0].set_value("hi").run()
     at.button[0].click().run()
     assert not at.exception
-    assert "Empty answer" in at.warning[0].value
+    assert at.warning[0].value == "Empty answer: the model returned no text. Not saved."
     assert not at.success and db.load_results() == []
+
+
+def test_lab_shows_provider_reason_for_bad_request(monkeypatch):
+    import httpx2
+    import openai
+
+    def create(**kwargs):
+        response = httpx2.Response(400, request=httpx2.Request("POST", "http://x"))
+        raise openai.BadRequestError(
+            "bad", response=response, body={"message": "Reasoning is mandatory for this endpoint"}
+        )
+
+    fake = FakeClient()
+    fake.chat.completions.create = create
+    monkeypatch.setattr(sidebar, "OpenAI", lambda **kwargs: fake)
+    at = app(LAB)
+    at.text_area[0].set_value("hi").run()
+    at.button[0].click().run()
+    assert not at.exception
+    assert at.error[0].value == "400: Reasoning is mandatory for this endpoint"
+
+
+def test_lab_save_failure_keeps_other_models_running(monkeypatch):
+    import sqlite3
+
+    calls = []
+
+    def save_result(**kwargs):
+        calls.append(kwargs["api_params"]["model"])
+        if len(calls) == 1:
+            raise sqlite3.IntegrityError("UNIQUE constraint failed")
+
+    monkeypatch.setattr(db, "save_result", save_result)
+    monkeypatch.setattr(sidebar, "OpenAI", lambda **kwargs: FakeClient("Hello"))
+    at = app(LAB)
+    at.sidebar.multiselect[0].set_value(config.FREE_MODELS).run()
+    at.text_area[0].set_value("hi").run()
+    at.button[0].click().run()
+    assert not at.exception
+    assert calls == config.FREE_MODELS
+    assert "not saved" in at.warning[0].value
+
+
+def test_results_names_legacy_rows():
+    db.save_result(
+        result_id="old",
+        experiment_name="e",
+        api_params={"engine": "davinci"},
+        response_time=1,
+        outputs=["x"],
+    )
+    db.save_result(
+        result_id="none", experiment_name="e", api_params={}, response_time=1, outputs=["x"]
+    )
+    at = app(RESULTS)
+    assert sorted(at.dataframe[0].value["model"].tolist()) == ["(unknown)", "davinci"]

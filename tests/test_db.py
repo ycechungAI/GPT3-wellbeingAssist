@@ -18,3 +18,14 @@ def test_save_and_load_roundtrip():
     assert json.loads(row["api_params"]) == {"model": "m"}
     assert json.loads(row["output_response"]) == ["नमस्ते", "hi"]
     assert row["created_at"]
+
+
+def test_api_params_keep_non_ascii():
+    db.save_result(
+        result_id="u",
+        experiment_name="e",
+        api_params={"prompt": "नमस्ते"},
+        response_time=1,
+        outputs=["x"],
+    )
+    assert "नमस्ते" in db.load_results()[0]["api_params"]

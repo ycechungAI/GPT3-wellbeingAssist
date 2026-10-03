@@ -16,7 +16,8 @@ if not rows:
     st.stop()
 
 for row in rows:
-    row["model"] = json.loads(row["api_params"] or "{}").get("model", "")
+    params = json.loads(row["api_params"] or "{}")
+    row["model"] = params.get("model") or params.get("engine") or "(unknown)"
 
 names = sorted({r["experiment_name"] for r in rows})
 selected = st.multiselect("Experiments", names, default=names)
